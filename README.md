@@ -21,7 +21,8 @@
 >>`groovyc HelloWorld.groovy` para compilar el archivo, crando el .class
 >
 >>`ls`  listar los archivos creados
->>`HelloWorld/  HelloWorld.class  HelloWorld.groovy`
+>
+		    `HelloWorld/  HelloWorld.class  HelloWorld.groovy`
 >
 >En una consola de CMD sobre la misma carpeta ejecutar `groovy HelloWorld`, para hacer el "Run" del archivo
  
