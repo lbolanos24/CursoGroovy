@@ -9,7 +9,7 @@
 ## SECCION 2 - 17:
  Ejercicios:
  
- Por editor:
+ *Por editor:*
  
 >* Se abre en la carpeta donde se esta trabajando un Git Bash
 >* Escribir
