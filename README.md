@@ -2,6 +2,7 @@
 >https://perficient.udemy.com/course/apache-groovy/
  
  En este archivo ire llenando las notas que considero relevantes colocando las secciones abordadas de la mas nueva a la mas antigua.
+ 
  /************************************************/
  /************************************************/
  
@@ -12,11 +13,13 @@
  
  >* Se abre en la carpeta donde se esta trabajando un Git Bash
  >* Escribir 
- >touch HelloWorld.groovy Para crear el archivo 
- >code HelloWorld.groovy para editar el archivo
- 	groovyc HelloWorld.groovy para compilar el archivo, crando el .class
- 	ls  listar los archivos creados
+  ```bash
+ touch HelloWorld.groovy Para crear el archivo 
+ code HelloWorld.groovy para editar el archivo
+ groovyc HelloWorld.groovy para compilar el archivo, crando el .class
+ ls  listar los archivos creados
  HelloWorld/  HelloWorld.class  HelloWorld.groovy
+ ```
  En una consola de CMD sobre la misma carpeta ejecutar groovy HelloWorld, para hacer el "Run" del archivo
  
  
