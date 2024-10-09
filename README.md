@@ -2,8 +2,21 @@
 >https://perficient.udemy.com/course/apache-groovy/
  
  En este archivo ire llenando las notas que considero relevantes colocando las secciones abordadas de la mas nueva a la mas antigua.
- 
+
  /************************************************/
+
+ /************************************************/
+## SECCION 3-20:
+Uso de paquetes e importaciones
+
+1. Abrir la terminal (CMD o GitBash) en la carpeta donde se esta trabajando
+2. Ejecute  `touch ImportDemo.groovy` para crear un archivo de trabajando
+3. Ejecute el comando `groovyConsole ImportDemo.groovy`. para abrir el archivo en la consola de Groovy.
+4. Escribir y ejecutar `def xml = new MarkupBuilder()`.
+Aparece el error `unable to resolve class MarkupBuilder`.
+El error se soliciona al hacer la importación del paquete `import groovy.xml.MarkupBuilder` y ejecuta.  
+El resultado sale ya sin error. (Paquete completo: `import groovy.xml.*`)
+
  /************************************************/
  
 ## SECCION 2 - 17:
