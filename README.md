@@ -10,8 +10,8 @@
  
  Por editor:
  
- >Se abre en la carpeta donde se esta trabajando un Git Bash
- >Escribir 
+ >* Se abre en la carpeta donde se esta trabajando un Git Bash
+ >* Escribir 
  >	touch HelloWorld.groovy Para crear el archivo 
  >	code HelloWorld.groovy para editar el archivo
  	groovyc HelloWorld.groovy para compilar el archivo, crando el .class
