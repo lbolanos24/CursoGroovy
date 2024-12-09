@@ -7,10 +7,439 @@
 
  /************************************************/
 
+## Seccion 4 - 43
+
+*Expresiones regulares* (regex)
+las expresiones regulares son representaciones de l busqueda de un patron usada ara escanear y concordar con un texto.  
+
+Operadores en groovy
+
+Groovy usa la API de expresiones regulares, con 3 operadores:  
+
+        Find operator		(=~)		java.util.regex.Matcher
+        Match operator		(==~)		boleean
+        Pattern operator	(~string)	java.util.regex.Pattern
+
+
+        Pattern						Meaning
+        abc							Concuerda con string que contenga a seguida de b y b seguida de c
+        b[aeiou]t					Concuerda con bat,bet,bit,bot y but
+        <TAG\b[^>]*>(.*?)</TAG>		Concuerda con HTLM especifico dentro del tag
+        \b[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}\b	concuerda con cualquier email	
+
+www.regular-expressions.info/refquick.html
+
+
+Ejemplos
+
+1. touch regex.groovy
+2. groovyConsole regex.groovy
+
+// Java sample Pattern
+
+        import java.util.regex.*;
+        Pattern pattern =Pattern.compile("a\\\\b") // en kjava para usar el back slash se necesita colocar 4 de ellos
+        println pattern        // a con un solo \ ya con 4\ sale a\\b
+        println pattern.class  // class java.util.regex.Pattern
+
+Patterns in Groovy
+
+        String slashy = /a\b/  // colocar informacion detre slash permite el uso de back slash simple
+        String url = $/http://threal/danvega.com/blog/$   // cuando hay varios se usa el dollar slash inicio y fin
+        println slashy.class
+
+        def pattern2 =  ~/a\b/   //class java.lang.String
+        println pattern2.class // class java.util.regex.Pattern
+
+
+Find | Match
+
+        def text = "empieza con Pablito clavo un clavito, que clavito clavo pablito"
+        def pattern3 = ~/Pablito clavo/
+        def finder = text =~ pattern3
+        def matcher = text ==~ pattern3
+
+        println finder  // java.util.regex.Matcher[pattern=Pablito clavo region=0,63 lastmatch=]
+        println finder.size()  //1
+        println matcher  // boolean: false
+
+        def text2 = "Pablito clavo"
+        def pattern4 = ~/Pablito clavo/
+        def matcher2 = text2 ==~ pattern4
+        println matcher2  // boolean: true
+
+        def text3 = "empieza con Pablito clavo un clavito, que clavito clavo pablito"
+        def pattern5 = ~/Pablito/
+
+        text3 = text3.replaceFirst (pattern5,"Dolores")
+        println text3 // empieza con Dolores clavo un clavito, que clavito clavo pablito
+
+
  /************************************************/
- 
+
+## SECCION 4 - 42
+
+Trabajando con strings en Groovy
+
+//Java ::
+
+    char c = 'c'
+    println c.class // class java.lang.Character
+
+    String str = "This is a string"
+    println str.class  // class java.lang.String
+
+//Groovy ::
+
+    def c2  = 'c'   // class java.lang.String
+    println c2.class
+
+    def str2 = 'This is a string'
+    println str.class // class java.lang.String
+
+Nota: groovy strings instances of java.lang.String
+
+string interpolation
+
+- Java  
+
+        String name = "Liliam"
+        String msg = "Hello " + name + "..."
+        println msg   // Hello Liliam...
+
+- Groovy  
+
+        String msg2 = "Hello ${name}"
+        println msg2   // Hello Liliam
+
+        String msg3 = 'Hello ${name}'
+        println msg3   // Hello ${name}
+
+        String msg4 = "We can evaluate expresions here: ${1 + 1}"
+        println msg4  // We can evaluate expresions here: 2
+
+Multiple strings  
+Se puede colocar cadenas de caracteres en diferentes lineas
+
+    def alargeMsg = '''
+    A Msg goes
+    here and
+    keeps going
+    '''  
+    println  alargeMsg
+    A Msg goes
+    here and
+    keeps going
+
+
+    def alargeMsg2 = """
+    A Msg goes
+    here and
+    keeps going  ${1 + 1}
+    """
+    println  alargeMsg2
+    A Msg goes
+    here and
+    keeps going  2
+
+Dollar strings    
+Son cadenas de string con caracteres especiales, en groovy se pueden colocar etre `$//$` para que sean leidas correctamente
+
+    def folder = "C:\\groovy\\CursoGroovy\\Scripts"
+    println folder // C:\groovy\CursoGroovy\Scripts
+
+    def folder2 = $/C:\groovy\CursoGroovy\Scripts/$
+    println folder2  //C:\groovy\CursoGroovy\Scripts
+
+
+  /************************************************/
+
+## SECCION 4 - 40 y 41
+
+Se crea el arcivo Accountdemo.groovy y se crea la clase segun las indicaciones:
+
+    @groovy.transform.ToString
+
+    class Account {
+
+        BigDecimal balance = 0.0
+        String Type // checking or savings
+
+        BigDecimal deposit(BigDecimal amount){
+            balance += amount 
+        }
+        
+        BigDecimal withdraw(BigDecimal amount){
+            balance -= amount 
+        }
+        
+        BigDecimal plus(Account account){
+        this.balance + account.balance
+        }
+    }
+
+
+    Account checking = new Account(type:"Checking")
+    checking.deposit(100.00)
+
+    Account savings = new Account(type:"Savings")
+    savings.deposit(50.00)
+
+    println checking  // Account(100.00, Checking)
+    println savings   // Account(50.00, Savings)
+
+    BigDecimal total = checking + savings  //Aca se usa el metodo plus. sino no se puede hacerla suma directamente
+    println total  // 150.00
+
  /************************************************/
- 
+
+## SECCION 4 - 39
+Operator overloading
+en la pagina de documentaciond e gorrovy groovy-lang.org/index.html ir a la seccion de documentation > operators > operator overloading
+
+
+        Operator	Method			Operator	Method
+        +			a.plus(b)		a[b]		a.getAt(b)
+        -			a.minus(b)		a[b] = c	a.putAt(b, c)
+        *			a.multiply(b)	a in b		b.isCase(a)
+        /			a.div(b)		<<			a.leftShift(b)
+        %			a.mod(b)		>>			a.rightShift(b)
+        **			a.power(b)		>>>			a.rightShiftUnsigned(b)
+        |			a.or(b)			++			a.next()
+        &			a.and(b)		--			a.previous()
+        ^			a.xor(b)		+a			a.positive()
+        as			a.asType(b)		-a			a.negative()
+        a()			a.call()		~a			a.bitwiseNegate()
+
+
+
+Ejemplos:
+
+def a = 1
+def b = 2
+
+        println a + b  // 3 . sub clases of Number class
+        println a.plus(b)
+
+
+        def s1 = "Hello"
+        def s2 = ", wold!"
+        println s1+s2  // Hello, wold!
+        println s1.plus(s2)
+
+ - Ejemplo de sobrecarga en clases  
+ Crear el archivo accounts.groovy
+
+        class Account{
+            BigDecimal balance
+            Account plus (Account other){
+                new Account (balance:this.balance + other.balance)
+            }
+            String toString(){
+                "Account Balance : $balance"
+            }
+        }
+
+        Account savings = new Account (balance: 100.00)
+        Account checking = new Account(balance:500.00)
+
+        println savings  // Account Balance : 100.00
+        println checking // Account Balance : 500.00
+        println savings + checking // Account Balance : 600.00
+
+ /************************************************/
+
+## SECCION 4 - 38
+
+*Working with numbers*
+
+--Groovy numbers default
+
+        def number=10
+        println number.class   // class java.lang.Integer
+
+        def decimal=5.5
+        println decimal.class   // class java.math.BigDecimal
+
+- Converiting data types
+- Explicit - casting
+
+        def myFloat = (float) 1.0
+        println myFloat.class  //class java.lang.Float
+
+- Implicit - coercion
+
+Rules for +,-,*
+
+- if eigther operand is a float or a double the result is a double
+- In Java only floats are involved the result is a float
+
+        Float f =5.25
+        Double d= 10.50
+        def result = d/f
+        println result  //2.0
+        println result.class  //class java.lang.Double
+
+        Float a =10.75
+        Float b= 53.75
+        def result2 = b / a
+        println result2  //5.0
+        println result2.class  //class java.lang.Double
+
+- If eigther iperand is a big decimal
+
+        def x = 34.5  //bigdecimal
+        def y = 15
+        def bigResult = x / y
+        println bigResult  //2.3
+        println bigResult.class //class java.math.BigDecimal
+
+- If eigther iperand is a BigInteger the result is a BigInteger
+- If eigther iperand is a Long the result is a Long
+- If eigther iperand is a Integer the result is an Integer
+
+
+- Double Division
+
+        println 5.0d - 4.1d  //0.9000000000000004
+        println 5 - 4.1  //0.9
+   
+- Integer Division
+
+        def intDiv = 1 / 2
+        println intDiv  //0.5 this is much different the Java where we wold get 0
+        println intDiv.getClass().getName() //java.math.BigDecimal
+        println 1.intdiv(2)  //0
+
+
+- GDK Methods
+
+        assert 2 == 2.5.toInteger() // Conversion
+        assert 2 == 2.5 as Integer // Enforced coercion
+        assert 2 == (int)2.5  // cast
+
+        assert '5.50'.isNumber()
+        assert 5 == '5'.toInteger()
+
+
+- times | upto | downto | step
+
+        20.times {  //Allows loops over
+            print '_'
+        }
+
+        1.upto(10){ num -> // Goes from 1 to 10
+            println num
+        }
+
+        10.downto(1){ num -> // Goes from 10 to 1
+            println num
+        }
+
+        0.step(1,0.1){ num -> // Goes from 0 to 1, by decimal increment in 0.1 //1 not included
+            println num
+        }
+
+ /************************************************/
+
+## SECCION 4 - 37:
+Obtener el tipo de datos
+
+        byte b= 10
+        b.getClass().getName()
+
+        short s= 1000
+        b.class
+
+        float f=1.23
+        f.class
+
+        65454654654654654654654543.class
+
+        4.50.class
+
+Si sabes que el tipo de dato de la variable no va a cambiar es bueno definirlo con el tipo de dato desde el principio.
+
+        def x = 10
+        x.getClass().getName()
+
+        x= "Dan"
+        x.getClass().getName()
+
+ /************************************************/
+
+## SECCION 4 - 36:
+
+Tipos de Datos (Data Type)
+
+*Nota:* Las variables deben ser declaradas antes de ser usadas en  Groovy Type y Name
+
+* Tipos de datos primitivos:
+        byte   java.lang.Byte   
+        short   java.lang.Short  
+        int   java.lang.Int  
+        long   java.lang.Long  
+        float   java.lang.Float  
+        double   java.lang.Float  
+        char   java.lang.Char  
+        boolean  java.lang.Boolean  
+
+En un archivo de groovy trabajamos los distintos tipos de datos:  
+
+        /*
+        * Primitive Data Types Demo
+        */
+        public class DataTypes {
+        public static void main(String[] args) {
+                // byte:
+                // Min Value: -128
+                // Max Value: 127
+                byte b = 127  // al salirse del rango, aparece un error.
+                println( b.class.getName() + " = " + b) //resultado java.lang.Byte = 127
+
+                // short:
+                // Min Value: -32,768
+                // Max Value: 32,767
+                short s = 10000
+                println( s.class.getName() + " = " + s)  // Resultado java.lang.Short = 10000
+                
+                // int:
+                // Min Value: -2,147,483,648 (-2^31)
+                // Max Value 2,147,483,647 (2^311)
+                int i = 324561789
+                println( i.class.getName() + " = " + i) // resultado: java.lang.Integer = 324561789  
+
+                int i = 2_147_483_647
+                println( i.class.getName() + " = " + i) // resultado: java.lang.Integer = 2147483647
+
+                // long:
+                // Min Value: -9,223,372,036,854,775,808 (2^63)
+                // Max Value: 9,223,372,036,854,775,807 (2^631)
+                long l = Long.MAX_VALUE
+                System.out.println(l.class.getName() + " = " + l) //resultado: java.lang.Long = 9223372036854775807
+
+                // float: 32-bits IEEE floating points (single precision)
+                // Min Value: 1.4E-45
+                // Max Value: 3.4028235E38
+                float f = 1.25F // float f = 1.25
+                println( f.class.getName() + " = " + f) //resultado: java.lang.Float = 1.25
+
+                // double:64-bit IEEE floating points (double precision)
+                // Min Value: 4.9E-324
+                // Max Value: 1.7976931348623157E308
+                double d = 1.05798202483D
+                println( d.class.getName() + " = " + d) // resultado: java.lang.Double = 1.05798202483
+
+                // char: character or unicode
+                char c = 'c'
+                println( c.class.getName() + " = " + c) //resultado: java.lang.Character = c
+
+                // boolean: true or false
+                boolean bool = true
+                println( bool.class.getName() + " = " + bool) //resultado: java.lang.Boolean = true
+            }
+        }
+
  /************************************************/
  
   ## SECCION 3 - 34:
