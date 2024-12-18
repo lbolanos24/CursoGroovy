@@ -3,7 +3,265 @@
  
  En este archivo ire llenando las notas que considero relevantes colocando las secciones abordadas de la mas nueva a la mas antigua.
 
+
  /************************************************/
+
+ /************************************************/
+
+ /************************************************/
+
+##  Section 5: 48-49
+
+Ejercicio de unidad 5  
+        /*
+        Ranges
+        Crear un rango de enum
+        imprimir el tamaño del rango
+        use un metodo para saber si Wednesday esta ahi
+        imprima from elemento del rango
+        imprima to elemento del rango
+        */
+
+        enum Days {
+            SUNDAY,MONDAY,TUESDAY,WEDNESDAY,THURSDAY,FRIDAY,SATURDAY
+        }
+
+        def dayRange = Days.SUNDAY..Days.SATURDAY
+
+        /*for in loop*/
+        for (day in dayRange){
+            println day
+        }
+        println ""
+        /*using closures*/
+        dayRange.each {day -> 
+            println day
+        }
+        println ""
+        println dayRange.size()
+        println dayRange.contains(Days.WEDNESDAY)
+        println dayRange.from  //get
+        println dayRange.to   //get
+
+
+        /*
+        List
+        Crear una lista de dias(Sun - Sat)
+        imprimir la lista
+        imprimir el tamaño de la lista
+        remover el sabado
+        añadir el sabado a la lista
+        imprimir el miercoles usndo index
+        */
+
+        def days = ["Sunday","Monday","Tuesday","Wednesday","Thursday","Friday","Saturday"]
+
+        println days   // [Sunday, Monday, Tuesday, Wednesday, Thursday, Friday, Saturday]
+        println days.size()   // 7
+        days.pop()
+        println days  // [Monday, Tuesday, Wednesday, Thursday, Friday, Saturday]
+        days.add("Saturday")  // [Monday, Tuesday, Wednesday, Thursday, Friday, Saturday, Saturday]
+        println days
+        println days [3]  // Thursday
+
+
+
+        /*
+        Maps
+        Crear un mapa de dias de la semana: 1:Sunday...
+        imprima el mapa
+        imprima la clase del mapa
+        imprima el tamaño del mapa
+        Hay un metodo ara imprimir los dias?
+        LinkedHashMap
+        */
+
+        Map map = [1:"Sunday",2:"Monday",3:"Tuesday",4:"Wednesday",5:"Thursday",6:"Friday",7:"Saturday"]
+
+        println map   // [1:Sunday, 2:Monday, 3:Tuesday, 4:Wednesday, 5:Thursday, 6:Friday, 7:Saturday]
+        println map.getClass().getName()  // java.util.LinkedHashMap
+        println map.size()   // 7
+        println map.values()  // [Sunday, Monday, Tuesday, Wednesday, Thursday, Friday, Saturday]
+
+
+ /************************************************/
+
+## Seccion 5 - 47
+
+https://docs.groovy-lang.org/latest/html/groovy-jdk/java/util/Map.html  
+Maps : diccionarios en  otros lenguajes  
+
+    def map =[:]  // ladiferencia con listas es que se usa :
+    println map   // [:]
+    println map.getClass().getName()   // implementacion default java.util.LinkedHashMap
+
+    def person =[first:"Liliam", last:"Bolanos", email:"lbolanos@gmail.com"]  // ladiferencia con listas es que se usa :
+    println person   // [first:Liliam, last:Bolanos, email:lbolanos@gmail.com
+    println person.first  // Liliam
+
+Add. añadir algo nuevo
+
+    person.twitter ="@liliambolanos"
+    println person // [first:Liliam, last:Bolanos, email:lbolanos@gmail.com, twitter:@liliambolanos]
+
+Ejemplps de llaves no directamente nombradas que son textos:  
+
+    def twitter = [username:"@liliamb",'Email Address':"lbolanos1984@gmail.com"]  // String como llave debe ir entre comillas simples''
+    println twitter  // [username:@liliamb, Email Address:lbolanos1984@gmail.com]
+
+    def emailKey = "Email Address"
+    def twitter2 = [username:"@liliamb",(emailKey):"lbolanos84@gmail.com"]  // Variable como llave debe ir entre parentesis ()
+    println twitter2  // [username:@liliamb, Email Address:lbolanos84@gmail.com]
+
+Tamaño del mapa, es decir cuantos elementos tiene
+
+    println person.size() // tamaño del mapa : 4
+
+No hay un ordenamiento directo del mapa pero igual se puede hacer con ordenamiento alfabetico de las llaves  
+
+    println person.sort()  // [email:lbolanos@gmail.com, first:Liliam, last:Bolanos, twitter:@liliambolanos]
+
+Looping through a person
+
+    for (entry in person){
+        println entry  // Imprime cada uno de los elementos del mapa en cada iteacion llave=contenido (first=Liliam)
+    }
+
+    for (key in person.keySet() ){
+        println "$key:${person[key]}"  // Imprime cada ino de los elementos del mapa en cada iteacion llave:contenido (last:Bolanos)
+    }
+
+/************************************************/
+
+## Seccion 5 - 46
+
+Listas
+
+https://docs.groovy-lang.org/latest/html/groovy-jdk/java/util/List.html
+
+Las listas son agrupaciones de datos de un mismo tipo, algunos ejemplos a continuación:
+
+    def nums1 = [1,2,3,6,7,9,4,5,3,6,8,9]
+    println nums1   // [1, 2, 3, 6, 7, 9, 4, 5, 3, 6, 8, 9]
+    println nums1.class.name   // java.util.ArrayList
+
+    List nums = [1,2,3,6,7,9,4,5,3,6,8,9] // tambien se puede con  as LinkedList
+    println nums   // [1, 2, 3, 6, 7, 9, 4, 5, 3, 6, 8, 9]
+    println nums.class.name   // java.util.ArrayList
+
+add|remove|get|clear
+
+Addig
+
+    nums.push(99)  //[99, 1, 2, 3, 6, 7, 9, 4, 5, 3, 6, 8, 9]
+    nums.putAt(0,77) // replace the 99
+    println nums   // [77, 1, 2, 3, 6, 7, 9, 4, 5, 3, 6, 8, 9]
+
+Overload lists  
+
+    nums[0]=78 // replace the 99
+    println nums   // [78, 1, 2, 3, 6, 7, 9, 4, 5, 3, 6, 8, 9]
+
+    println nums +[3,4,6]   //[78, 1, 2, 3, 6, 7, 9, 4, 5, 3, 6, 8, 9, 3, 4, 6]
+
+    println nums + 7   //[78, 1, 2, 3, 6, 7, 9, 4, 5, 3, 6, 8, 9, 7]
+
+Remmoving  
+
+    nums.pop()
+    println nums   //[1, 2, 3, 6, 7, 9, 4, 5, 3, 6, 8, 9]
+
+    nums.removeAt(0)
+    println nums   //[2, 3, 6, 7, 9, 4, 5, 3, 6, 8, 9]
+
+    def newList = nums -3
+    println newList  //[2, 6, 7, 9, 4, 5, 6, 8, 9] remueve las ocurrencias de 3
+    println nums[4]  // 9. pues es la 4 posicion (comienza en 0)
+
+Get  
+    println nums.getAt(0..3)  // [2, 3, 6, 7]  , list original [2, 3, 6, 7, 9, 4, 5, 3, 6, 8, 9]
+
+In loops  
+    for (x in nums){
+        println x  // imprime cada numero de la lista
+    }
+
+
+Método flatten  
+
+    nums << [3,4,5]
+    nums << [1,2]
+    println nums. flatten()  // [2, 3, 6, 7, 9, 4, 5, 3, 6, 8, 9, 3, 4, 5, 1, 2]
+
+Método unique  
+
+    println nums.unique()   // [2, 3, 6, 7, 9, 4, 5, 8, [3, 4, 5], [1, 2]]
+
+
+    def numbers1 = [1,2,7,3,8,3,8,3,8,9,2,6,10,165,4] as Set
+    println numbers1  // [1, 2, 7, 3, 8, 9, 6, 10, 165, 4]  no hay duplicados en un set
+    println numbers1.class.name // java.util.LinkedHashSet
+
+    def numbers = [1,2,7,3,8,3,8,3,8,9,2,6,10,165,4] as SortedSet
+    println numbers  // [[1, 2, 3, 4, 6, 7, 8, 9, 10, 165] Lista ordenada sin duplicados
+    println numbers.class.name // java.util.TreeSet
+
+
+ /************************************************/
+
+## Seccion 5 - 45
+
+Collections - Ranges  
+https://docs.groovy-lang.org/latest/html/gapi/groovy/lang/Range.html
+
+Examples
+
+    for( int x = 1; x <= 10; ++x){
+        print x
+    }
+
+    println ""
+
+    for( int y = 10; y >= 1; --y){
+        print y
+    }
+
+    println ""
+
+    def letters = ['a','b','c']
+    for( int i = 0; i < letters.size(); ++i){
+        print letters[i]
+    }
+    
+/*---------------------------------------------*/
+
+    Range r = 1..10  // doble punto indica que es un rango
+    //Range r = <1..10  // rango de 1 a menor que 10
+    println r  //No me imprimio el rango, debe ser [1,2,3,4,5,6,7,8,9,10]
+    println r.class.name // groovy.lang.IntRange
+    println r.from  //1  Inicio del rango
+    println r.to  //10 final del rango
+
+    assert (0..10).contains(0)
+    assert (0..10).contains(10)
+    assert (0..10).contains(-10) == false
+    assert (0..10).contains(11) == false
+
+    assert (0..<10).contains(0)
+    assert (0..<10).contains(10) == false
+
+    Date today = new Date()
+    Date oneWeekAway = today + 7
+
+    println today  // Mon Dec 09 18:34:37 COT 2024
+    println oneWeekAway // Mon Dec 16 18:34:37 COT 2024
+
+    Range days = today..oneWeekAway
+    println days  // Mon Dec 09 18:36:23 COT 2024..Mon Dec 16 18:36:23 COT 2024
+
+    Range letters = 'a'..'z'
+    println letters // a..z
+
 
  /************************************************/
 
