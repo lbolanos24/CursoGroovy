@@ -3,10 +3,438 @@
  
  En este archivo ire llenando las notas que considero relevantes colocando las secciones abordadas de la mas nueva a la mas antigua.
 
+ /************************************************/
+
+ /************************************************/
 
  /************************************************/
 
  /************************************************/
+
+ /************************************************/
+
+## Section 6 - 57/58:
+https://groovy-lang.org/closures.html
+https://groovy-lang.org/api.html
+groovy.lang > Classes - Closure
+
+[Exercise] Using Closures
+Closure Basics
+* Locate the class groovy.lang.Closure and spend a few minutes looking through documentation.
+    - Create a Method that accepts a closure as an argument
+    - Create a closure that performs some action
+    - Call the method and pass the closure to it.
+* Create a list and use them each to iterate over each item in the list and print it out
+    - Hint - You can use the implicit it or use your own variable
+* Create a map of data and iterate over it using each method. 
+    - This method can take a closure that accepts 1 or 2 arguments. 
+    - Use 2 arguments and print out the key and value on each line.
+    - Demonstrate the use of curry and try to come up with an example different from the one we used in the lecture. 
+
+
+Create a Method that accepts a closure as an argument
+        def mymethod(Closure c){
+            c()
+        }
+
+Create a closure that performs some action
+        def foo ={
+            println "foo"
+        }
+
+Call the method and pass the closure to it.
+        mymethod(foo) // imprime el contenido del print = foo
+
+Create a list and use them each to iterate over each item in the list and print it out
+        List names = ["Dan Vega","Joe Vega","Andy vega","Katie Vega"]
+        names.each{ name ->
+            println name
+        }Imprime  Dan Vega, Joe Vega, Andy vega, Katie Vega en cada linea
+
+Create a map of data and iterate over it using each method. 
+        Map teams = [baseball:"Cleveland Indians", basketball:"Cleveland Cavs", football:"Cleveland Browns"]
+        teams.each{k,v ->
+            println "$k = $v"
+        } // imprime baseball = Cleveland Indians, basketball = Cleveland Cavs, football = Cleveland Browns
+
+Demonstrate the use of curry and try to come up with an example different from the one we used in the lecture.  
+        def greet = {String greeting, String name ->
+            println "$greeting, $name"
+        } 
+        greet ("Hello","Liliam") // Hello, Liliam
+
+        def sayHello = greet.curry("Hello")
+        sayHello("Paola") // Hello, Paola
+
+
+Explore the GDK
+In the following exercises we are going to explore the GDK to find some methods that take closures and learn how to use them. Hint - I would narrow your search to java.util.Collection, java.lang.Iterable & java.util.List
+
+https://groovy-lang.org/gdk.html
+
+* Search for the find and findAll methods.
+    - What is the difference between the two? 
+    - Write some code to show how they both work.
+
+        Collection > find(Closure c) y findAll(Closure c)
+        find(Closure closure)
+        Finds the first value matching the closure condition.
+        findAll(Closure closure)
+        Finds all values matching the closure condition.
+
+* Search for the any and every methods.
+    - What is the difference between the two? 
+    - Write some code to show how they both work. 
+
+        Iterable > 
+        any(Closure predicate)
+        Iterates over the contents of an iterable, and checks whether a predicate is valid for at least one element.
+        every(Closure predicate)
+        Used to determine if the given predicate closure is valid (i.e. returns true for all items in this iterable).
+
+* Search for the method groupBy that accepts a closure
+    - What does this method do? 
+    - Write an example of how to use this method.
+
+        Map	groupBy(Closure closure)
+        Sorts all Iterable members into groups determined by the supplied mapping closure.
+        Map	groupBy(Object closures)
+        Sorts all Iterable members into (sub)groups determined by the supplied mapping closures.
+        Map	groupBy(List closures)
+        Sorts all Iterable members into (sub)groups determined by the supplied mapping closures.
+
+Lista de mapas  
+
+        List people = [
+            [name:'Jane', city:"New York City"],
+            [name:'John', city:"Cleveland"],
+            [name:'Mary', city:"New York City"],
+            [name:'Dan', city:"Cleveland"],
+            [name:'Tom', city:"New York City"],
+            [name:'Frank', city:"New York City"],
+            [name:'Jason', city:"Cleveland"]
+        ]
+
+        println people.find{person -> person.city=="Cleveland"}
+        // Imprime el primer elemento de la lista que concuerde: [name:John, city:Cleveland]
+        println people.findAll{person -> person.city=="Cleveland"}
+        // Imprime [[name:John, city:Cleveland], [name:Dan, city:Cleveland], [name:Jason, city:Cleveland]]
+
+        println people.any{person -> person.city == "Cleveland"}  // imprime  true
+        println people.every{person -> person.city == "Cleveland"}  // imprime  false
+        println people.every{person -> person.name.size() >= 3}  // imprime  true
+
+        def peopleByCity = people.groupBy { person -> person.city } 
+        println people.peopleByCity  // Imprimio nulls
+
+        def newYorkers = peopleByCity["New York City"]
+        def clevelanders = peopleByCity["Cleveland"]
+
+        clevelanders.each{
+            println it.name
+        } // John, Dan, Jason
+
+
+ /************************************************/
+
+## Seccion 6 - 56:
+Closure Delegates  
+https://docs.oracle.com/javase/8/docs/api/java/lang/StringBuffer.html  
+
+    Class StringBuffer
+    java.lang.Object
+    java.lang.StringBuffer
+
+    public final class StringBuffer
+    extends Object
+    implements Serializable, CharSequence
+
+Owner, delegate and This
+This:  corresponde a la clase encasillada donde el closure es definido
+owner: corresponde al objeto encasillado donde el closure es definido / clase o closure
+delegate: corresponde al un objeto de tercera parte donde as llamadas a los metodos propiedades son resueltas siempre que el receiver del mensaje no este definido
+
+Creacion del archivo `touch Scope.groovy`  
+Ingreso a la consola groovyConsole `Scope.groovy`
+
+        class ScopeDemo {
+            def outerClosure = {
+                println this.class.name  // ScopeDemo
+                println owner.class.name  // ScopeDemo
+                println delegate.class.name  // ScopeDemo la clase delegada suele ser el Owner a menos que se cambie
+                def nestedClosure = {
+                    println this.class.name  // ScopeDemo - apunta a la clase principal, la clase ScopeDemo
+                    println owner.class.name  // ScopeDemo$_closure1 la clase propietaria es outerClosure
+                    println delegate.class.name  //ScopeDemo$_closure1 la clase propietaria es outerClosure
+                }
+                nestedClosure()
+            }
+        }
+
+        def demo = new ScopeDemo()
+        demo.outerClosure()
+
+Delegados  
+Creacion del archivo `touch Delegates.groovy`  
+Ingreso a la consola groovyConsole `Delegates.groovy`
+
+Como cambiar los delegados si asi lo queremos 
+
+        def writer = {
+            append 'Liliam'
+            append 'Lives in Envigado'
+        }
+        def append (String s){
+        println "append() called with argument of $s"
+        }
+        writer()
+
+    /* result with out StringBuffer
+    append() valled with argument of Liliam
+    append() valled with argument of Lives in Envigado
+    */
+
+Otro metodo para cambio de delegados  
+        def writer = {
+            append 'Liliam'
+            append ' Lives in Envigado'
+        }
+
+        StringBuffer sb = new StringBuffer()
+        writer.delegate = sb
+        writer()
+
+    /* result with StringBuffer
+    Liliam Lives in Envigado
+    se delega el resultado de writer en el stringbuffer el cual sabe append es un metodo que toma el string
+    */
+
+
+Cambio con Apendice  
+        def writer = {
+            append 'Liliam'
+            append 'Lives in Envigado'
+        }
+        def append (String s){
+        println "append() called with argument of $s"
+        }
+
+        StringBuffer sb = new StringBuffer()
+        writer.delegate = sb
+        writer()
+
+    /* result 
+    append() called with argument of Liliam
+    append() called with argument of Lives in Envigado
+
+    lo que pasa aca es que aunque se le ha asignado un delegado, aun llama al metodo encasillado append, pues esa es basicamente la estrategia de resolucion /resolucion que tiene
+    */
+
+Metodo DELEGATE_FIRST
+        def writer = {
+            append 'Liliam'
+            append ' Lives in Envigado'
+        }
+        def append (String s){
+        println "append() called with argument of $s"
+        }
+
+        StringBuffer sb = new StringBuffer()
+        writer.resolveStrategy = Closure.DELEGATE_FIRST
+        writer.delegate = sb
+        writer()
+
+    /* result with DELEGATE_FIRST
+    Liliam Lives in Envigado
+    */
+
+ /************************************************/
+
+## Seccion 6 - 55:
+
+Curry Methods  
+
+        def log = {String type,Date createdOn, String msg ->
+            println "$createdOn [$type] - $msg"
+        }
+        log("DEBUG", new Date(), "This is my first debug statement")
+        // imprime al llamar al metodo: Tue Dec 24 16:35:07 COT 2024 [DEBUG] - This is my first debug statement
+
+Reusar un closure reusando el ya existente  
+        def debugLog = log.curry("DEBUG")
+        debugLog(new Date(),"This is the second debug statement")  // Tue Dec 24 16:41:46 COT 2024 [DEBUG] - This is the second debug statement
+        debugLog(new Date(),"This is the third debug statement")  // Tue Dec 24 16:41:46 COT 2024 [DEBUG] - This is the third debug statement
+
+        def todayDebugLog = log.curry("DEBUG", new Date())
+        todayDebugLog("This is the today's debug msg") // Tue Dec 24 16:44:46 COT 2024 [DEBUG] - This is the today's debug msg
+
+Right curry  
+        def crazyPersonLog = log.rcurry("Why am I loggin this way.")
+        crazyPersonLog("ERROR",new Date()) // Tue Dec 24 16:49:14 COT 2024 [ERROR] - Why am I loggin this way.
+
+Index based currying  
+        def typeMsgLog = log.ncurry(1,new Date()) // reemplaza la fecha con la variable en particular
+        typeMsgLog("ERROR","This is using ncurry") // Tue Dec 24 16:52:50 COT 2024 [ERROR] - This is using ncurry
+
+ /************************************************/
+## Seccion 6 - 54
+
+Collection methods
+http://groovy-lanf.org/gdk.html
+
+each(Closure c) 
+eachWithIndex(Closure c) 
+
+each / eachWithIndex  
+
+        List favNums = [2,21,44,35,8,4]
+
+        for (num in favNums){
+            println num
+        }   // imprime 2,21,44,35,8,4 con salto de linea
+
+        favNums.each { println it } // imprime 2,21,44,35,8,4 con salto de linea
+
+        for (int  i=0; i < favNums.size(); i++ ){
+            println "$i:${favNums[i]}"
+        } // imprime 0:2,1:21,2:44,3:35,4:8,5:4 con salto de linea
+
+        favNums.eachWithIndex { num, idx -> 
+            println "$idx:$num" 
+            } // imprime 0:2,1:21,2:44,3:35,4:8,5:4 con salto de linea
+
+findAll, pasando una condicion  
+
+        List days = ["Sunday","Monday","Tuesday","Wednesday","Thursday","Friday","Saturday"]
+        List weekend = days.findAll {it.startsWith("S")}
+
+        println days   // [Sunday, Monday, Tuesday, Wednesday, Thursday, Friday, Saturday]
+        println weekend   // [Sunday, Saturday]
+
+Colecciones: collect  
+
+        List nums =[1,2,2,7,2,8,2,4,6]
+        List numsTimesTen =[]
+        nums.each{num ->
+            numsTimesTen << num * 10
+        }
+        println nums  // [1, 2, 2, 7, 2, 8, 2, 4, 6]
+        println numsTimesTen  //[10, 20, 20, 70, 20, 80, 20, 40, 60]
+
+Sin embargo esta no es la forma mas eficiente de hacerlo, pues esta haciendo un ciclo sobre la lista. Se puede hacer un uso mas funcional con la coleccion  
+
+        List newTimesTen = nums.collect{ num -> num * 10}
+        println newTimesTen  // [10, 20, 20, 70, 20, 80, 20, 40, 60]
+
+
+ /************************************************/
+## Seccion 6 - 53
+
+Closure parameters  
+
+        // Implicit parameter
+        def foo ={     // Tambien se puede usar name -> println name
+            println it
+            }
+        foo ('Lili')  //  Envia a imrimir Lili
+
+        def noparams = {
+            println "no params ..."
+        }
+        noparams()  //Imprime lo que este en noprarams()  no params ...
+
+        def sayHello = { String first, String last ->
+            println "Hello, $first $last"
+        }
+        sayHello ("Liliam","Bolanos")   // en el print Hello, Liliam Bolanos
+
+        //default values
+        def greet = {String name, String greeting ="Howdy" ->
+            println "$greeting, $name"
+        }
+        greet("Liliam","Hello")   // se imprime Hello, Liliam
+        greet("Paola")   // se imprime Howdy, Paola
+
+        //var-arg : para pasar tantos argumentos como sea necesario sin conocer la cantidad
+        def concat = {String... args ->
+            args.join('')
+        }
+        println concat ('abc','def')   // abcdef
+        println concat ('abc','def','123','456') // abcdef123456
+
+        //
+        def someMethod(Closure c){
+            println "..."
+            println c.maximumNumberOfParameters
+            println c.parameterTypes
+        }
+        def someClosure = {int x, int y -> x + y}
+        someMethod(someClosure) // impime para numero de parametros  2 y para el tipo [int, int]
+
+ /************************************************/
+## Seccion 6 - 52:
+
+Ejemplos de closures:  
+
+        Closure c1 = {}
+
+        println c1.class.name  // 52-Basics$_run_closure1
+        println c1 instanceof Closure   // true
+
+        def c = {}
+        println c.class.name  // 52-Basics$_run_closure2
+        println c instanceof Closure   // true
+
+        //El closure es un bloque de codigo que actua como una como una funcion anonima
+        def sayHello1 = {
+            println "Hello"
+        }
+        sayHello1()   // Hello
+
+        def sayHello = { name ->  // se puede pasar parametros
+            println "Hello, $name"
+        }
+        sayHello('Liliam')   // Hello, Liliam
+
+        List nums = [1,4,7,4,30,2]
+        nums.each ({ 
+            println it // palabra reservada it para tomar cada elemento de la lista en el closure
+                        // Result: [1, 4, 7, 4, 30, 2]
+        })
+
+        nums.each ({ num ->  // otra forma es si se quiere el nombre de la vble
+            println num // palabra reservada it para tomar cada elemento de la lista en el closure
+                        // Result: [1, 4, 7, 4, 30, 2]
+        })
+
+        // los closures son objets y ultimo parametro
+        def timesTen(num,closure){
+            closure (num*10)
+        }
+        timesTen(10, {println it})  // 100
+        timesTen(2, {println it})   // 20
+
+        10.times {
+            println it  // imprime del 0 al 9
+        }
+
+        import java.util.Random
+        Random rand = new Random()
+        3.times{
+            println rand.nextInt()   // imprime 3 numeros aleatorios
+        }
+
+ /************************************************/
+## Seccion 6 - 51:
+
+Closures  
+https://groovy-lang.org/closures.html  
+https://docs.groovy-lang.org/latest/html/api/groovy/lang/Closure.html  
+
+Es como un metodo a exepcionque es como un ciudadano de primera clase del lenguaje  
+Hace lo mismo que un metodo pero funciona como un objeto y puede ser pasado o usado entre los programas.  
+Son usados para:
+Iteradores, CallBacks, Higher-order functions, estructuras de conrol especializadas, Constructores Localizacionde recursos, hilos, DSLs, Fluent interfaces
 
  /************************************************/
 
