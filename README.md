@@ -32,32 +32,38 @@ Closure Basics
     - Demonstrate the use of curry and try to come up with an example different from the one we used in the lecture. 
 
 
-Create a Method that accepts a closure as an argument
+Create a Method that accepts a closure as an argument  
+
         def mymethod(Closure c){
             c()
         }
 
-Create a closure that performs some action
+Create a closure that performs some action  
+
         def foo ={
             println "foo"
         }
 
-Call the method and pass the closure to it.
+Call the method and pass the closure to it.  
+
         mymethod(foo) // imprime el contenido del print = foo
 
-Create a list and use them each to iterate over each item in the list and print it out
+Create a list and use them each to iterate over each item in the list and print it out  
+
         List names = ["Dan Vega","Joe Vega","Andy vega","Katie Vega"]
         names.each{ name ->
             println name
         }Imprime  Dan Vega, Joe Vega, Andy vega, Katie Vega en cada linea
 
-Create a map of data and iterate over it using each method. 
+Create a map of data and iterate over it using each method.   
+
         Map teams = [baseball:"Cleveland Indians", basketball:"Cleveland Cavs", football:"Cleveland Browns"]
         teams.each{k,v ->
             println "$k = $v"
         } // imprime baseball = Cleveland Indians, basketball = Cleveland Cavs, football = Cleveland Browns
 
 Demonstrate the use of curry and try to come up with an example different from the one we used in the lecture.  
+
         def greet = {String greeting, String name ->
             println "$greeting, $name"
         } 
