@@ -13,6 +13,305 @@
 
  /************************************************/
 
+## Section 7 64-65
+ [Exercise] Control Structures  
+
+We used a class similar to this in a previous exercise but I think it's a short and sweet example of what we need to review in this exercise. 
+
+Create An Account Class  
+create a property of type BigDecimal called balance with an initial value of 0.0  
+Create a method called deposit  
+use a conditional structure (if would work great here) to check if the amount being passed is less than zero. If it is we should catch this case because we don't want to deposit negative numbers. In this case, throw an exception.  
+Create another method called deposit that takes a list of amounts  
+use a for loop to loop over these amounts and call deposit
+Now that we have our class let's test it out. You can do all of this in the same file (just don't create a file called Account.groovy)   
+Create an instance of the account class  
+deposit a valid amount  
+deposit an invalid amount (what happens?)  
+try / catch on invalid amounts  
+deposit a list of amounts. 
+
+Solucion:  
+
+    class Account {
+        BigDecimal balance = 0.0
+        
+        def deposit(BigDecimal amount){
+            if ( amount < 0 ){
+                throw new Exception ("Deposit amount must be greater than 0")
+            }
+            balance += amount
+        }
+        
+        def deposit(List amounts){
+            for ( amount in amounts ) {
+                deposit(amount)
+            }
+        }
+    }
+
+    Account checking = new Account()
+    checking.deposit(10)
+    println checking.balance
+
+    try {
+        checking.deposit(-1)
+    }catch (Exception e) {
+        println e.message
+    }
+
+    println checking.balance
+
+    checking.deposit([1,5,10,20,50])
+    println checking.balance
+
+ /************************************************/
+## Seccion 7 - 63
+
+Exceptions  
+El manejo de excepciones en groovy es similar al de Java. Try-catch  
+La diferencia radica en que en groovy las exepciones son opcionales. por tanto no necesitan formar parte del metodo
+
+En Java  
+
+    public void foo() throws Exception{  // esto hace que sea obligatorio en los metodos
+        throw new Exception()
+    }
+
+En Groovy  
+
+    def foo(){
+        // do stuff
+        throw new Exception("Foo Exception")
+    }
+
+Ejemplo  
+
+        List log = []
+
+        try {
+            foo()
+        } catch ( Exception e ) {
+            log << e.message
+        } finally {
+            log << 'finally'
+        }
+        println log   
+        //-- imprime [Foo Exception, finally]
+
+
+        // Java 7 introdujo un multi catch sintaxis
+
+        try {
+            //do stuff here
+        } catch ( FileNotFoundException | NullPointerException e ) {
+            println e.class.name
+            println e.message
+        }
+
+ /************************************************/
+## Seccion 7 - 62
+
+Looping: Construcciones tipo blucle  
+
+*While*
+
+        List numbers=[1,2,3] //lista llena
+        while ( numbers ) {
+            numbers.remove(0)  // se van removiendo numeros hasta que yas no haya
+        }
+        assert numbers == [] // al ejecutar el bloque de codigo no sale nada pues la asercion es verdadera
+
+
+*for*  
+
+    for (vble in iterable){
+    }
+
+    List nums=[1,2,3]
+    for (i in nums){
+        println i 
+    } // imprime 1, 2, 3. pues imprime un numero de la lista en cada iteracion
+
+    for (i in 1..10){
+        println i 
+    }// imprime 1 al 10. pues imprime un numero del rango en cada iteracion
+
+
+    Closure c = { }
+
+Nota: es importante anotar que aunque la estructura es similar a un closure, son cosas distintas
+
+*return / break / continue*  
+En Java se debe hacer retornos en todas partes, pero en groovy se tiene el metodo getFoo() que devuelve un string, que basicamente va a retornar ese string en el final de cada metodo 
+
+        String getFoo(){
+            "foo"
+        }
+
+        Integer a = 1
+        while ( true ) { // loop infinito si no se condiciona
+            a++
+            break
+        }
+        assert a == 2 // condicional del loop
+
+        for (String s in 'a'..'z'){
+            if (s == 'a') continue
+            println s
+            if (s > 'b') break
+        }  // este bucle imprime b y c
+
+
+ /************************************************/
+## Seccion 7 - 61
+
+Estructuras condicionales
+- if (boolean expression){logic}  
+
+        if( true ){ 
+            println "true"  // true
+        }
+        if( true )
+            println true  // true
+
+        def age = 35
+        if( age >= 35 ){ 
+            println "can run for president"  // can run for president
+        }
+
+        if( true ){
+            println true 
+        } else {
+            println true 
+        }
+
+        def yourAge=18
+        if( yourAge >=21 ){
+            println "Buy beer" 
+        } else {
+            println "not beer for you" 
+        }
+
+        def someAge = 37
+        if( someAge >= 21 && someAge < 35 ){
+            println "Buy some beer" 
+        } else if ( someAge >= 35 ) {
+            println "run for president"
+        } else {
+            println "under 21..." 
+        }
+
+
+- Ternary operator '(expression) ? true : false'  
+Permite crear una linea corta de expresiones para comprobar y evaluar si una expresion es verdadera, y hacer algo con esa expresion
+
+        def name = 'Liliam'
+        def isitLiliam =(name.toUpperCase()=='LILIAM')? 'YES':'NO'
+        println isitLiliam    //YES
+
+        def isitLiliam2 =(name.toLowerCase()=='LILIAM')? 'YES':'NO'
+        println isitLiliam2    //NO
+
+        def msg
+        def output =(msg != null) ? msg : 'default message...'
+
+        def elvisOutput = msg ?: 'default message...'
+        println msg   // null 
+        println output   // default message...
+        println elvisOutput   //default message...
+
+
+- Switch statement: es diferente que en Java  
+
+        def num = 12
+
+        switch (num){
+        case 1:
+            println "1"
+            break
+        case 2:
+            println "2"
+            break   // se coloca para que no se impriman todos los casos y termine la sentencia, default no lo necesita por ser el ultimo
+        case 1..3:
+            println "in range 1..3"
+            break
+        case Integer:
+            println "num is an Integer"
+            break
+        case Float:
+            println "num is an Float"
+            break
+        case [1,2,12]:
+            println "num is in list [1,2,12]"
+            break
+        default:
+            println "default..."
+        }
+
+
+- IN: se puede usar como expresion para comparar variables.
+
+        def validAges = 18..35
+        def someAge =19
+        println someAge in validAges  // true
+
+
+
+ /************************************************/
+## Seccion 7 - 59
+groovy-lang.org/semantics.html#_control_structures
+
+## Seccion 7 - 60
+
+Groovy truth  
+
+Una expresion siempre verdadera, ejemplo: 
+
+    if(true) {
+        println "true"
+    }
+
+- boolean, 				Boolean value es verdadero
+
+        assert true
+        assert !false
+
+- Matcher,				Matcher tiene Match (expresiones regulares)
+
+        assert ('a' =~/a/)
+        assert !('a' =~/b/)
+
+- Collection,			Coleccion no vacia
+
+        assert [1]
+        assert ![]
+
+- Map,					Mapa no vacio
+
+        assert [1:'one']
+        assert ![:]
+
+- String,				Cadena no vacia  
+
+        assert 'a'
+        assert !''
+
+- Number, Character	Numero no cero
+
+        assert 1
+        assert 3.5
+        assert !0
+
+- Non of the above,	Objeto referencia que no es null  
+
+        assert new Object()  
+        assert !null
+
+Es importante entender como groovy evalua diferentes items, para el uso de los operadores condicionales
+
+
+ /************************************************/
 ## Section 6 - 57/58:
 https://groovy-lang.org/closures.html
 https://groovy-lang.org/api.html
