@@ -1,7 +1,7 @@
-package com.cursogroovy;
+package com.cursogroovy.service;
 
 public interface IPersonService {
-    public void doSomenting(){
+    public default void doSomenting(){
         System.out.println("doing somenting...");
     }
 }

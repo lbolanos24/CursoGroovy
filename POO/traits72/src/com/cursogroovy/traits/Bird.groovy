@@ -1,4 +1,10 @@
 package com.cursogroovy.traits
 
-class Bird {
+class Bird implements FlyingAbility, SpeakingAbility{
+
+    @Override
+    String foo() {
+        return null
+    }
+
 }

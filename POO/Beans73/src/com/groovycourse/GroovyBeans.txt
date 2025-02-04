@@ -1,0 +1,13 @@
+Groovy beans
+Es como un eatandar, una clase con estandares para seguir
+- Todas las propiedades privadas (Uso de getters y setters)
+- Constructor publico sin argumentos
+- Implementar serializable
+	java provee un mecanismo, llamado objeto de serializacion donde un objeto puede ser representado como una secuenca de bytes que incluye esa data del objeto, asi como la informacion sobre el tupo de dato y los tipos de dato almacenados en el objeto.
+
+- Crear Java Bean
+- Equivalencia en groovy Bean
+- Ver que ocurre por debajo de un groovy bean
+- Como usar Groovy beans
+- Como escribir tus getters /Setters
+- Acceso directo a campos

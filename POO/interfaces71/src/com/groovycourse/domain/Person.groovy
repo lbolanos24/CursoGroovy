@@ -1,5 +1,8 @@
-package com.groovycourse.domain;
+package com.groovycourse.domain
 
-public class Person {
+import groovy.transform.ToString
+
+@ToString
+class Person {
     String first, last
 }

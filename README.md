@@ -2,7 +2,7 @@
 >https://perficient.udemy.com/course/apache-groovy/
  
  En este archivo ire llenando las notas que considero relevantes colocando las secciones abordadas de la mas nueva a la mas antigua.
-
+ 
  /************************************************/
 
  /************************************************/
@@ -10,6 +10,556 @@
  /************************************************/
 
  /************************************************/
+ 
+ /************************************************/
+# Seccion 8 - 74-75:
+Ejercicio
+
+What makes up a class  
+Tweet  
+We are going to create a class that represents a single tweet. This is an exercise both about code and starting to think about what goes into building a class. There is no right or wrong answer here so don't be afraid to build your class how you see fit. I will go over in the review what I was thinking about when I built mine but again my answer is not the right one.   
+What properties and methods go into building a tweet class?   
+Bonus Points  
+How could you extract mentions and hashtags from the post text?   
+
+    @groovy.transform.Canonical
+    class Tweet {
+        String post // message
+        String username
+        Date postDateTime
+        
+        private List favorites = []
+        private List retweets = []
+        private List mentions = []
+        private List hashtags = []
+        
+        // Implementacion de metodos
+        void favorite(String username){
+            favorites << username
+        }
+        List getFavorites(){
+            favorites
+        }
+        void retweets(String username){
+            retweets << username
+        }
+        List getRetweets(){
+            retweets
+        }
+        List getMentions(){
+            String pattern = /\B@[a-z0-9_-]+/
+            post.findAll(pattern)
+        }
+        List getHashTags(){
+            String pattern = /(?:\s|\A)[##]+([A-Za-z0-9-_]+)/
+            post.findAll(pattern)
+        }
+    }
+
+    Tweet tweet = new Tweet (post:"Avance del curso groovy seccion 8 @therealdanvega #Java #groovylang", username:"@lbolanos", postDateTime: new Date() )
+    println tweet
+    // Imprime: Tweet(Avance del curso groovy seccion 8, @lbolanos, Fri Jan 31 17:15:33 COT 2025)
+
+    tweet.favorite("@ApacheGroovy")
+    tweet.retweets("@ApacheGroovy")
+
+    println tweet.getFavorites()   // imprime [@ApacheGroovy]
+    println tweet.getRetweets()   // imprime [@ApacheGroovy]
+
+    println tweet.getMentions()   // imprime [@therealdanvega]
+    println tweet.getHashTags()   // imprime [ #Java,  #groovylang]
+
+
+ /************************************************/
+# Seccion 8 - 73:
+Groovy beans
+Es como un eatandar, una clase con estandares para seguir
+- Todas las propiedades privadas (Uso de getters y setters)
+- Constructor publico sin argumentos
+- Implementar serializable
+	java provee un mecanismo, llamado objeto de serializacion donde un objeto puede ser representado como una secuenca de bytes que incluye esa data del objeto, asi como la informacion sobre el tupo de dato y los tipos de dato almacenados en el objeto.
+
+- Crear Java Bean
+- Equivalencia en groovy Bean
+- Ver que ocurre por debajo de un groovy bean
+- Como usar Groovy beans
+- Como escribir tus getters /Setters
+- Acceso directo a campos
+
+
+Clase Java de ejemploEmployeeBean.java
+
+    package com.groovycourse;
+
+    import java.io.Serializable;
+
+    public class EmployeeBean implements Serializable {
+        private String first;
+        private String last;
+        private String email;
+
+        public EmployeeBean() {
+        }
+
+        public String getFirst() {
+            return this.first;
+        }
+
+        public void setFirst(String first) {
+            this.first = first;
+        }
+
+        public String getLast() {
+            return this.last;
+        }
+
+        public void setLast(String last) {
+            this.last = last;
+        }
+
+        public String getEmail() {
+            return this.email;
+        }
+
+        public void setEmail(String email) {
+            this.email = email;
+        }
+
+        public String toString() {
+            return "EmployeeBean{first='" + this.first + "', last='" + this.last + "'}";
+        }
+    }
+
+Uno de los problemas de java , es que hay mucho ruido, en el ejemplo anterior solo hay 3 campos pero hay demasiada data. y por esto se puede incrementar cosiderablemente el mantenimiento e codigo.
+
+*En groovy*  
+Employee.groovy  
+package com.groovycourse  
+    import groovy.transform.ToString
+    @ToString
+
+    class Employee implements Serializable {
+        String first, last, email
+// Se necesitan Get/ y set para estos campos, para ello se pasan los campos a privados por debajo  
+// Para ello lo que se debe jhacer es Implementar la clase Serializable  
+// Al hacer Build > Compile de esta clase se crea la carpeta out, y dentro la el archivo Employee.class  
+// Donde se van a generar los argumentos privados, contructor sin argumentos , Getters y settes  
+
+        String fullName
+        // Se puede escribir sus propios get and set si asi se desea
+        void setFullName(String name){
+            fullName=name
+        }
+        String getFullName(){
+            "Full Name: ${fullName}"
+        }
+    }
+
+
+
+DoubleBean.groovy  
+package com.groovycourse
+
+    class DoubleBean {
+        public Integer value
+        // un valor publico podra accederse desde la instancia
+
+        void setValue(value){
+            this.value=value
+        }
+        Integer getValue(){
+            value * 2
+        }
+    }
+
+app.groovy  
+package com.groovycourse
+
+Forma 1: Una forma de validar la clse empleado
+
+        Employee emp = new Employee(first: "Liliam",last: "Bolanos",email: "lb@email.com")
+        println emp
+
+        Imprime
+        com.groovycourse.Employee(Liliam, Bolanos, lb@email.com)
+        Process finished with exit code 0
+
+
+
+Forma 2:
+
+        Employee emp = new Employee()
+        emp.first = "Lili"  // esta es la equivalencia de set first
+        println emp.first // equivalencia al setter
+
+        imprime : Lili
+
+
+Forma 3:
+
+        DoubleBean db = new DoubleBean()
+        db.value=100
+
+        println db.value  // imprime 200
+        println db.@value  // imprime 100... el valor asignado aca sin llamar al getter
+
+
+ /************************************************/
+# Seccion 8 - 72:
+Traits
+Permite componer capacidades en las clases. Se puede heredar tarits
+la diferencia es que un trat puede tener un estado
+
+En java 8 se puede generar una interfaz de este tipo 
+
+IPersonService.java
+default public interface IPersonService {
+    public void doSomenting(){
+        System.out.println("doing somenting...");
+    }
+}
+
+Una intefaz no tiene un cuerpo en el metodo en Java 7, pero 8 implemento esa capacidad
+Al hacer el metodo default puede implementarse dentro del metodo.
+
+docs.groovy-lang.org/next/html/documentation/core-traits.html
+
+
+FlyingAbility.groovy
+    String fly(){
+        "I'm Flying!"
+    }
+
+    abstract String foo() // metodo abstracto, vacio
+    //Tambien se puede implemantar metodos privados
+    private String bar(){
+        "bar"
+    }
+
+
+SpeakingAbility.groovy
+package com.cursogroovy.traits
+
+trait SpeakingAbility {
+
+    public String a
+    private String b
+
+    String speak(){
+        "I'm Speaking!"
+    }
+}
+
+
+Bird.Groovy
+package com.cursogroovy.traits
+
+class Bird implements FlyingAbility, SpeakingAbility{
+
+    @Override
+    String foo() {
+        return null
+    }
+
+}
+
+
+app.groovy
+package com.cursogroovy
+
+import com.cursogroovy.traits.Bird
+
+Bird b=new Bird()
+assert b.fly() == "I'm Flying!"
+assert b.speak() == "I'm Speaking!"
+
+
+
+/// Process finished with exit code 0
+ /************************************************/
+# Seccion 8 - 71:
+Interfaces
+
+con clic derecho donde se implemeta la interfaz > genetare > implement methods . se selecciona los metodos para sobre escribir
+
+
+
+Person.groovy
+package com.groovycourse.domain
+
+import groovy.transform.ToString
+
+@ToString
+class Person {
+    String first, last
+}
+
+/**/
+IPersonService.Groovy
+
+package com.groovycourse.service;
+
+import com.groovycourse.domain.Person
+
+interface IPersonService {
+    // usa metodos abtractos, no se implemeta logica
+    Person find()
+    List<Person> findAll()
+}
+
+
+
+/**/
+
+PersonService.Groovy
+
+package com.groovycourse.service
+
+import com.groovycourse.domain.Person
+
+class PersonService implements IPersonService{
+    //Esta clasae implemeta la interfaz
+    @Override
+    Person find() {
+        Person p = new Person(first:"Liliam", last:"Bolanos")
+        return p
+    }
+
+    @Override
+    List<Person> findAll() {
+        Person p1 = new Person(first:"Liliam", last:"Bolanos")
+        Person p2 = new Person(first:"German", last:"Velasco")
+
+        [p1,p2]
+    }
+}
+
+/**/
+
+
+app.groovy
+
+package com.groovycourse
+
+import com.groovycourse.service.PersonService
+
+PersonService personService = new PersonService()
+
+println personService.find()
+
+Imprime
+com.groovycourse.domain.Person(Liliam, Bolanos)
+Process finished with exit code 0
+
+ /************************************************/
+# Seccion 8 - 70:
+
+Herencia: se usa con la palabra reservada *extends*
+
+Archivo de clase *Phone.groovy*
+
+        package com.cursogroovy.domain
+
+        class Phone {
+
+            String name
+            String os
+            String appStore
+
+            def powerOn(){
+            }
+
+            def powerOff(){
+            }
+
+            def ring(){
+            }
+        }
+
+Archivo de clase *IPhone.groovy*
+
+        package com.cursogroovy.domain
+
+        import groovy.transform.ToString
+
+        @ToString()
+        class IPhone extends Phone {
+
+            String iosVersion
+
+            def homeButtonPressed(){
+            }
+
+            def airPlay(){
+            }
+
+            @Override
+            def powerOn(){
+            }
+        }
+
+Archivo *app.groovy*
+
+        package com.cursogroovy
+        import com.cursogroovy.domain.IPhone
+
+        IPhone phone = new IPhone(name:"iPhone",appStore: "App Store", os: "IOS")
+        println(phone)
+
+Al ejecutar, tiene el resultado:
+
+        com.cursogroovy.domain.IPhone(null)
+        Process finished with exit code 0
+
+
+ /************************************************/
+# Seccion 8 - 69:
+
+En groovy se debe declarar el uso de paquetes, si no se hace se usa el paquete por defecto
+
+Se crea el proyecto Package demo con paquetes y clases
+
+    paquete com.cursogroovy
+    > controller
+        >>democontroller.groovy
+    >domain
+        >>Person.groovy
+    >service
+        >>PersonService.groovy
+
+ /************************************************/
+# Seccion 8 - 68:
+
+Constructores y Metodos
+
+Ejemplo de clase con un constructor  
+
+        class Person{
+            // contructores
+            public Person(){
+                return this
+            }
+            
+            otro ejemplo de contructor con parametros puede ser 
+            public Person(String first, last){
+                this.first = first
+        }
+        Person p = new Person()
+
+Constructor por defecto ejemplo:
+
+        @groovy.transform.ToString
+        class Person {
+            String first, last
+            // contructor
+        }
+        Person p = new Person(first:'Liliam', last:'Bolanos')
+        println p   // Person(Liliam, Bolanos), campos construidos por defecto
+
+
+Constructor propio ejemplo: 
+
+        @groovy.transform.ToString
+        class Person {
+            String first, last
+            // contructores
+            Person(String fullName){   // instancia de la clase
+                List parts = fullName.split(' ')
+                first = parts[0]
+                last = parts[1]
+            }
+        }
+        Person p = new Person("Liliam Bolanos")
+        println p  // Person(Liliam, Bolanos)
+
+Metodos  
+
+        @groovy.transform.ToString
+        class Person {
+            String first, last
+//contructores  
+
+            Person(String fullName){   // instancia de la clase
+                List parts = fullName.split(' ')
+                first = parts[0]
+                last = parts[1]
+            }
+    // Metodo en Java
+            public void foo(String a, String b){
+                //do stuff
+            }
+    // Metodo en Groovy. por defecto son public. y tampoco se necesita el return
+            String getFullName(String a, String b){
+                "$first $last"
+            }
+    // Otra caracteristica de groovy es que no se necesita definir el tipo de retorno
+            def bar(){
+                // puede ser cualquier tipo inclusive void en el retorno
+            }
+    //Tambien se pueden crear metodos estaticos
+            static String doGoodWork(){
+                println "doing good work..."
+            }
+    //Se puede crear metodos que llaman mas metodos, o metodos argumento
+
+            def someMethod(numbers){  
+    // al argumento se le puede o no asignar un tipo. o tambien se le puede colocar valor por defecto
+                println "doing good work..."
+            }
+
+    // hay casos en los cuales no se sabe cuantos argumentos van a pasar en un metodo  
+    //Se puede pasar la variable VarArgs
+            def concat (String...args){
+                println args.length  
+            }
+        }
+Para los metodos no es necesario definir una instancia de la clase  
+
+        Person.doGoodWork()  // imprime: doing good work...
+
+        Person p = new Person("Liliam Bolanos")
+        p.concat('a','b')  // imprime la longitud = 2
+ /************************************************/
+ # Seccion 8 - 66 - 67:
+ Programacion Oriantada a Ojetos
+
+ Clases:
+ 
+    class Person {
+        //fields
+        String firstName, lastName
+        def dob
+        // private | protected | public
+        protected String f1, f2, f3
+        private Date createdOn = new Date()
+        
+        static welcomeMsg = 'HELLO'  
+        //Constante: en java y Groovy se ven en mayúsculas
+        public static final String WELCOME_MSG = 'Hello' 
+        
+        //Local variables: declaradas al interior del metodo, por tanto son locales a ese metodo unicamernte
+        // las variables locales a metodo no se confunden con las declase aun cuando tienen el mismo nombre
+        def foo(){
+            String msg = "Hello you"
+            String firstName = "Liliam"
+            println "$msg, $firstName"
+        }
+    }
+
+Prueba de fields  
+En la manera normal, Cuando se necesita acceder a la clase se debe crear una instancia
+    
+    Person p = new Person()
+
+// con un campo elastico se puede acceder a la clase sin necesidad de instanciarla
+
+    println Person.welcomeMsg  // HELLO
+    println Person.WELCOME_MSG  // Hello
+
+Prueba de local variables
+
+    def person = new Person()
+    person.foo()  //  Hello you, Liliam
 
  /************************************************/
 

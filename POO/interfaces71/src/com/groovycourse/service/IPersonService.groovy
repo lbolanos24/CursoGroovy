@@ -1,8 +1,9 @@
 package com.groovycourse.service;
 
-import java.util.List;
+import com.groovycourse.domain.Person
 
-public interface IPersonService {
+interface IPersonService {
     // usa metodos abtractos, no se implemeta logica
-    List<>
+    Person find()
+    List<Person> findAll()
 }

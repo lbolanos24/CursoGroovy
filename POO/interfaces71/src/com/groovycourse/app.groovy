@@ -1,4 +1,7 @@
 package com.groovycourse
 
-class app {
-}
+import com.groovycourse.service.PersonService
+
+PersonService personService = new PersonService()
+
+println personService.find()
