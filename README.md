@@ -12,6 +12,505 @@
  /************************************************/
  
  /************************************************/
+
+ /************************************************/
+
+ /************************************************/
+
+ /************************************************/
+# Seccion 9 - 82-83:
+Ejercicio
+
+Runtime Metaprogramming
+
+*GroovyObject*  
+Create a class and implement each of the following methods from the GroovyObject Interface  
+invokeMethod  
+getProperty  
+setProperty  
+
+    Developer.groovy
+
+    class Developer {
+        String first
+        String last
+        String email
+        List languajes
+
+        Developer(){}
+
+        def invokeMethod (String name, Object args){
+            println("invokeMethod() called with args $args")
+        }
+
+        def getProperty (String property){
+            println("getProperty method called...")
+            metaClass.getProperty(this,property)
+        }
+        void setProperty (String property, Object newValue){
+            println("setProperty() called with name $property and newValue $newValue")
+            metaClass.setProperty(this,property,newValue)
+        }
+    }
+
+Se crea un objeto developer añadiendo un metodo o llamando un metodo a developer que no existe  
+
+    GroovyObjectDemo.Groovy
+
+    Developer developer = new Developer(first: "Liliam", last:"Bolanos", email: "lbolanos@gmail.com")
+    developer.writeCode("Groovy")
+    println(developer.first)
+    developer.languajes=["Groovy","Java"]
+
+
+Imprime:  
+
+    invokeMethod() called with args [Groovy]
+    getProperty method called...
+    Liliam
+    setProperty() called with name languajes and newValue [Groovy, Java]
+
+
+
+*Expando*  
+Create an Expando Class  
+Add some properties and methods to it  
+Knowing that a class's metaclass is an expando to create your own class and add properties and methods to it.  
+
+    ExpandoDemo.Groovy
+
+    Expando e = new Expando()
+
+    e.first = "Lili"
+    e.last = "BolanosR"
+    e.email = "lbolanos1@gmail.com"
+
+    e.getFullName = {
+        "$first $last"
+    }
+
+    println(e.toString())
+    println(e.getFullName())
+
+
+Imprime
+
+    {last=BolanosR, getFullName=ExpandoDemo$_run_closure1@610db97e, first=Lili, email=lbolanos1@gmail.com}
+    Lili BolanosR
+
+Este es el resultado de expando
+
+
+Lo siguiente sucede en tiempo de compilacion
+
+    @groovy.transform.ToString(includeNames = true)
+    class Person {
+        String first, last
+    }
+
+    Person p = new Person(first:"LiliamP", last: "BolanosR1")
+    p.metaClass.email = "lbolanos2@gmail.com"
+    println(p)
+    println(p.email)
+
+Imprime:  
+
+    Person(first:LiliamP, last:BolanosR1)
+    lbolanos2@gmail.com
+
+
+*Times Two*  
+Add a new method to the Integer class called `timesTwo`  
+This method should be available to any instance of Integer  
+What is another approach that we can take to create this method that would be a little more controlled?
+
+    SquareDemo.groovy
+    Integer.metaClass.timesTwo = { delegate*2}
+
+    println(2.timesTwo())
+    println(4.timesTwo())
+    println(5.timesTwo())
+    println(10.timesTwo())
+
+Imprime  
+        4
+        8
+        10
+        20
+
+
+ /************************************************/
+ # Seccion 9 - 81:
+
+Intercept / Cache /Invoke Pattern  
+
+    InterceptCacheInvoke.groovy
+
+    class Developer{
+        def methodMissing (String name, args){
+            println "${name}() method was called..."
+        }
+    }
+    Developer dan = new Developer()
+    dan.writeGroovy()
+
+Imprime: 
+
+    InterceptCacheInvoke
+
+Otro ejemplo:  
+Intercept - Cache - Invoke pattern
+
+    class Developer{
+
+        List languages = []
+
+        def methodMissing (String name, args){
+            println "${name}() method was called..."
+            if(name.startsWith('write')){
+                String language = name.split("write")[1]
+                if(languages.contains(language)){
+                    def impl = { Object[] theArgs ->
+                        println "I like to write code in $language"
+                    }
+                    getMetaClass()."$name" = impl
+                    return impl(args)
+                }
+            }
+        }
+    }
+    Developer dan = new Developer()
+    dan.languages << "Groovy"
+    dan.languages << "Java"
+        println dan.metaClass.methods.size()
+    dan.writeGroovy()
+    dan.writeGroovy()
+    dan.writeGroovy()
+        println dan.metaClass.methods.size()
+    dan.writeJava()
+    dan.writeGroovy()
+    println dan.metaClass.methods.size()
+
+La primera vez se llama el metodo Missing, pero una vez ya se ha llamado lo ejecuta como si existiera. y solo vuelve a llamarlo cuando cambia el llamado a otro valor  
+Esto es lo llamado Intercept cache invoke pattern, que es un performance boost
+
+ /************************************************/
+# Seccion 9 - 80:
+Categorias de clases
+
+        catdemo.groovy
+        String.metaClass.shout = { -> toUpperCase()}
+
+        println "Hello, World!".shout()
+
+Imprime  
+
+    HELLO, WORLD!
+
+El problema aqui es que se esta añadindo un metodo a la clase restringida String  
+Entonces la no se sabe que el metodo exite a menos que se defina en una API  
+Asi que no es una buena idea y por eso es bueno crear una Clase Categoria
+
+        StringCategory.groovy
+
+        class StringCategory {
+            static String shout(String str){
+                str.toUpperCase()
+            }
+        }
+
+La manera en que se usa la clase categoria es el use  
+Lo llamado dentro de esa clase categoria es como un metodo nativo
+
+
+        catdemo.groovy
+
+        use (StringCategory) {
+            println "Hello, World!".shout()
+        }   
+
+Imprime  
+        
+    HELLO, WORLD! al igual que lo hizo de la anterior forma. sin embargo si se hace el llamado fuera del metodo use se genera un error groovy.lang.MissingMethodException: No signature of method
+
+Una clase que esta ya definida es TimeCategory.  
+
+        time.groovy
+
+        import groovy.time.TimeCategory
+
+        use(TimeCategory){
+            println 1.minute.from.now  //  Wed Feb 12 18:32:48 COT 2025
+            println 10.hours.ago   //  Wed Feb 12 08:31:48 COT 2025
+
+            def someDate = new Date()
+            println someDate - 3.months  // Tue Nov 12 18:31:48 COT 2024
+        }
+
+ /************************************************/
+# Seccion 9 - 79:
+MetaClass
+
+Crear el pryecto meta-class-79
+crear el archivo de groovy MetaClassDemo en el src  
+
+        Meta class demo
+        class Developer {
+        }
+        Developer lili = new Developer()
+        println "Hello Lili..."
+
+Colocar un breakpont permite detener la ejecucion del programa en el punto indicado  
+Para despues usar el debbuger y evaluar que esta pasando en el programa  
+Al ejecutar el debug indica que la variable lili pertenece a metaclass. por tanto lo  puede llamar. 
+Ejemplo  
+
+        lili.metaClass
+
+EXPANDO  
+
+        class Developer {
+        }
+        Developer lili = new Developer()
+        Expando e = new Expando()
+
+Dentro de la clase expando se puede ver que representa a una expansion dinamica de bean  
+Es decir que se puede añador campos y metodos que Expando no tiene
+
+        e.name= 'Liliam'
+        e.writeCode = {->println "$name Loves to write code..."}
+        e.writeCode()
+
+Imprime:  
+        Liliam Loves to write code...
+        Process finished with exit code 0
+
+Si se añade una segunda instanci falla:  
+
+        Expando e2 = new Expando()
+        e2.writeCode()
+Imprime un error:  
+
+        Caught: groovy.lang.MissingMethodException: No signature of method: groovy.util.Expando.writeCode() is applicable for argument types: () values: []*/
+
+
+
+Una meta clase en realidad es una Expando  
+
+        class Developer {
+        }
+
+Por instancia
+
+        Developer lili = new Developer()
+        lili.metaClass.name = 'Lili'
+        lili.metaClass.writeCode = {->println "$name Loves to write code..."}
+        lili.writeCode()
+
+Imprime  
+
+        Lili Loves to write code...
+        Process finished with exit code 0
+
+Dado que la metaclase se ha asociado a la llamada, la meta clase sabe como manejar el metodo
+
+Para toda instancia.  
+Se debe tener cuidado, pues esta modificando una isntancia general y eso es peligroso
+
+    String.metaClass.shout = { -> toUpperCase()}
+    println "Hello Liliam".shout()
+
+Imprime  
+
+    HELLO LILIAM
+    Process finished with exit code 0
+
+
+ /************************************************/
+# Seccion 9 - 78:
+
+Creo el archivo MOP.txt con la descripcion:
+
+        - GroovyObject
+        - Employee.groovy
+        - invokeMethod()
+        - get property
+        - property missing
+        - set property
+        - method missing
+
+
+Class de nombre Employee, sin ningún cambio, lo dejamos tal cual.
+
+        package com.groovycourse
+        class Employee {
+        }
+
+Creo un simple Groovy Script de nombre InvokeMethodDemo, empezamos a colocar esto en el código:  
+
+Este metodo es llamado cuando cuando el metodo llamado no esta presnete en el Objeto de Groovy  
+
+        package com.groovycourse
+        class InvokeDemo {
+            def invokeMethod (String name, Object args){
+                return "called invokeMethod $name $args"
+            }
+
+            def test(){
+                return "Method exists"
+            }
+        }
+
+        def invokeDemo = new InvokeDemo()
+        assert invokeDemo.test() == "Method exists"
+        assert invokeDemo.someMethod() == "called invokeMethod someMethod []"
+
+
+Creo GetPropertyDemo.groovy
+
+Cada lectura de acceso a una propiedad puede ser interceptada por sobreescritura del metodo getproperty() del objeto actual.  
+
+        package com.groovycourse
+        class PropertyDemo {
+            def prop1 = "prop1"
+            def prop2 = "prop2"
+            def prop3 = "prop3"
+
+            def getProperty (String name){
+                println "getProperty() called with argument $name"
+
+                if(metaClass.hasProperty(this,name)){
+                    metaClass.hasProperty(this,name)
+                }else{
+                    println "lets do something fun with this property"
+                    return "party time..."
+                }
+                // return
+                //metaClass.getProperty(this,name)
+            }
+        }
+
+        def pd = new PropertyDemo()
+        //get property
+        println pd.prop1
+        println pd.prop2
+        println pd.prop3
+        //property missing
+        println pd.prop4
+
+Ejecuto y obtengo esto:  
+    getProperty() is called with argument prop1
+    prop1
+    getProperty() is called with argument prop2
+    prop2
+    getProperty() is called with argument prop3
+    prop3
+    getProperty() is called with argument prop4
+    lets do something fun with this property
+    party time...
+
+PropertyMissingDemo.groovy  
+Groovy supports the concept of propertyMissing for intercepting failing property resolution attemps  
+
+        class Foo{
+            def propertyMissing(String name){
+                "caught missing property: $name"
+            }
+        }
+
+        println new Foo().bar
+
+Doy click derecho y selecciono Run 'PropertyMissingDemo', y obtengo esto:  
+        caught missing property: bar
+        Process finished with exit code 0
+
+
+Crear archivo SetPropertyDemo.groovy  
+
+Se puede interceptar el acceso de escritura a las propiedades sobreescribiendo el metodo setProperty()  
+
+        package com.groovycourse
+        class POGO {
+            String property
+
+            void setProperty(String name, Object value){
+                this.@"$name" ='overridden'
+            }
+        }
+
+        def pogo = new POGO()
+        pogo.property='a'
+
+        assert pogo.property == 'overridden'
+
+Ejecuto con click derecho y obtengo cero errores, todo ok
+
+
+Creo un simple Groovy Script de nombre MissingMethodDemo, 
+
+Groovy soporta el concepto de MethodMissing(). este metodo difiere del de invocacion en que ese es unico. Es invocado en caso de que falle el metodo dispatch, cuando el metodo no puede ser encontrado por el nombre dado y/o los argumentos dados.  
+
+    package com.groovycourse
+
+    import org.codehaus.groovy.runtime.metaclass.MissingMethodExceptionNoStack
+    class MyEmployee {
+        def methodMissing(String name, def args){
+
+            if( name != 'someMethod' ){
+                throw new MissingMethodException(name,args)
+            }
+
+            println "Method missing called on: $name"
+            println "with argument ${args}"
+        }
+    }
+
+    MyEmployee emp = new MyEmployee()
+    emp.someMethod(1,2,3)
+    /*Imprime
+    Method missing called on: someMethod
+    with argument [1, 2, 3]
+    */
+    emp.someOtherMethod(4,5,6)
+
+Ejecuto y obtengo lo siguiente  
+
+    Method Missing called on: someMethod
+    with arguments [1, 2, 3]
+    -Caught: groovy.lang.GroovyRuntimeException: Could not find matching constructor for: groovy.lang.MissingMethodException(String, [Ljava.lang.Object;)
+    -groovy.lang.GroovyRuntimeException: Could not find matching constructor for: groovy.lang.MissingMethodException(String, [Ljava.lang.Object;)
+    -	at com.domain_name.MyEmployee.methodMissing(MissingMethodDemo.groovy:8)
+    -	at com.domain_name.MissingMethodDemo.run(MissingMethodDemo.groovy:17)
+
+Process finished with exit code 1
+
+
+ /************************************************/
+# Seccion 9 - 77:
+Meta Object protocol (MOP)  
+La metaprogramacion es la escritura de progamas de pc que escriben o manipulan otros programas.  
+MOP: coleccion de reglas de como una solicitud de llamada a un metodo es llamada por el sistema en tiempo de ejecucion y coo controlar la capaintermedia.  
+ 
+Entonces, cuando hablamos de llamadas desde Groovy, en realidad podríamos estar tratando con tres tipos diferentes de objetos, ¿cierto?
+
+POJO.  
+Tenemos un objeto Java normal cuya clase puede escribirse en Java o en cualquier otro lenguaje para la JVM.
+
+POGO.  
+objeto Groovy cuya clase está escrita en Groovy. Extiende java.lang.object e implementa la interfaz de objeto Groovy Feeling de Groovy de manera predeterminada.
+
+Groovy interceptor.  
+Y un interceptor Groovy es un objeto que implementa la interfaz Groovy Interceptable y tiene una capacidad de interceptación de métodos. 
+
+Entonces, estos son los tres tipos diferentes de objetos con los que Groovy va a trabajar y, en función de cuál tenga, tomará una ruta diferente.
+
+ /************************************************/
+ # Seccion 9 - 76:
+*Runtime Metaprogramming*  
+Grovy es un lenguaje dinamico, muchas de esas capacidades vienen de la metaprogramacion  
+
+ /************************************************/
+
 # Seccion 8 - 74-75:
 Ejercicio
 

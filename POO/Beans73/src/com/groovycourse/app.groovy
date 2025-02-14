@@ -16,7 +16,7 @@ Process finished with exit code 0
 //emp.first = "Lili"  // esta es la equivalencia de set first
 //println emp.first // equivalencia al setter
 
-// impime : Lili
+// imprime : Lili
 
 
 // tercera forma
