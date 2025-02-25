@@ -10,12 +10,587 @@
  /************************************************/
 
  /************************************************/
+ # Seccion 10 - 95-96:
+Ejercicio
+
+AST Transformations
+
+We looking at a lot of AST Transformations in this section. Now I want you to go through the documentation and find one that we didn't look at and see if you can get it to work on your own.
+
+https://groovy-lang.org/api.html
+>> groovy.transform  >> AutoClone
+
+Asiste en la creacion de clases autoclonales. que añade un metodo clonable publico para listar las interfaces que la clase implementa
+
+se crea la clase Person.groovy
  
- /************************************************/
+    package clone
+    import groovy.transform.AutoClone
+    @AutoClone
+    class Person {
+    String first, last
+    List favItems
+    Date since
+    }
+ 
+Al hacer el build y revisar en la clase generada Person.class, se ve que la clase implemeta la clase Clonable y que se ha generado un metodo clone()
+
+        @Generated
+        public Person clone() throws CloneNotSupportedException {
+            Object _result = ((Class)ScriptBytecodeAdapter.invokeMethodOnSuper0(Person.class, this, (String)"clone")).cast<invokedynamic>(ScriptBytecodeAdapter.invokeMethodOnSuper0(Person.class, this, (String)"clone"));
+            if (this.favItems instanceof Cloneable) {
+                List var2 = ((Class)InvokerHelper.class.invoke<invokedynamic>(InvokerHelper.class, this.favItems, "clone", (Object)null)).cast<invokedynamic>(InvokerHelper.class.invoke<invokedynamic>(InvokerHelper.class, this.favItems, "clone", (Object)null));
+                ScriptBytecodeAdapter.setProperty(var2, (Class)null, _result, (String)"favItems");
+            }
+
+            Object var10000 = ScriptBytecodeAdapter.compareEqual((Object)null, this.since) ? null : this.since.invoke<invokedynamic>(this.since);
+            Date var3 = ((Class)var10000).cast<invokedynamic>(var10000);
+            ScriptBytecodeAdapter.setProperty(var3, (Class)null, _result, (String)"since");
+            return _result.cast<invokedynamic>(_result);
+        }
+	
+
+Crear el script clonedemo.groovy
+
+    package clone
+
+    def p = new Person(first:'John', last:'Smith', favItems:['ipod', 'shiraz'], since:new Date())
+    def p2 = p.clone()
+
+    assert p instanceof Cloneable
+    assert p.favItems instanceof Cloneable
+    assert p.since instanceof Cloneable
+    assert !(p.first instanceof Cloneable)
+
+    assert !p.is(p2)
+    assert !p.favItems.is(p2.favItems)
+    assert !p.since.is(p2.since)
+    assert p.first.is(p2.first)
+
 
  /************************************************/
+# Seccion 10 - 94:
+Builder
+es usado para ayuader a escribir clases que pueden ser creadas ussando algo llamado fluent API calls. permite una nueva manera de contruir objetos (objetos de objetos tambien)
+https://groovy-lang.org/api.html
+>> groovy.transform.builder  >> Builder
+
+en este ejemplo se usara defaultStrategy
+
+crear la clase Developer.Groovy
+
+    package builder
+    import groovy.transform.ToString
+    import groovy.transform.builder.Builder
+
+    @Builder
+    @ToString(includeNames = true)
+    class Developer {
+        String firstName
+        String lastName
+        String middleInitial
+        String email
+        Date hireDate
+        List languages
+    }
+
+y luego el script default.groovy
+
+En vez de instanciar el objeto se llama directamente al metodo build
+ya con esto se puede llamar a los setters para cada propiedad
+
+    package builder
+    Developer lili = Developer
+            .builder() 
+
+            .firstName("Liliam")
+            .lastName("Bolanos")
+            .middleInitial("P")
+            .email("lbolanos@gmail.com")
+            .hireDate(new Date())
+            .languages(["Java","Groovy"])
+            .build()
+    println(lili)
+    assert lili.firstName == "Liliam"
+    assert lili.lastName == "Bolanos"
+    assert lili.languages.size() == 2
+
+imprime 
+
+    builder.Developer(firstName:Liliam, lastName:Bolanos, middleInitial:P, email:lbolanos@gmail.com, hireDate:Mon Feb 24 18:21:09 COT 2025, languages:[Java, Groovy])
+    y el proceso termina con exito
+
+// es otra manera de instanciar un objeto usando la anotacion builder
+
 
  /************************************************/
+# Seccion 10 - 93:
+CompileStatic
+
+CompileStatic trabaja de la mno con TypeChecked. permite al compilador de groovy usar la anotacion TypeChecked en la misma forma que Java como Static compilation, similar a Javabyte code.
+
+https://groovy-lang.org/api.html
+>> groovy.transform  >> CompileStatic
+
+Ejemplo SomeClass.groovy
+
+    package compile
+    import groovy.transform.CompileStatic
+    import groovy.transform.TypeCheckingMode
+
+    @CompileStatic
+    class SomeClass {
+
+        String foo(){
+            "foo"
+        }
+        String bar(){
+            "bar"
+        }
+
+        @CompileStatic(TypeCheckingMode.SKIP)
+        void noReturn(){
+        }
+    }
+
+
+ /************************************************/
+# Seccion 10 - 92:
+TypeChecked
+
+https://groovy-lang.org/api.html
+>> groovy.transform  >> TypeChecked
+
+Para chequeo de typo en tiempo de compilacion
+
+creo la clase persona con un metodo para obtener el nombre completo. lo que hara dicho metodo es retornar la union de las vbles
+
+    package typechecked
+
+    class Person {
+        String firstName
+        String lastName
+
+        String getFullName(){
+            "$firstName $lastName"
+        }
+    }
+
+pero que pasa por ejemplo si en el metodo se coloca un error de typeo
+
+    String getFullName(){
+        "$firstName $lastname"
+    }
+
+que aunque en el codigo se vera marcada, no necesariamente se sabe que es lo que ocurre, y no es un error de tiempo de compilacion necesariamente. si se trata de hacer compilacion (Build > Compile Person), termina con exito, por no ser un problema de compilacion. Lo que se puede hacer en este caso es añadir la anotacion de TypeChecked, lo que quiere decir que todo en la clase sera revisado en typeo. Tambien se puede añadir individualmete a metodos o propiedades.
+
+    package typechecked
+    import groovy.transform.TypeChecked
+
+    @TypeChecked
+    class Person {
+        String firstName
+        String lastName
+
+        String getFullName(){
+            "$firstName $lastname"
+        }
+    }
+
+al ejecutar se obtiene un error de compilacion
+
+    Groovyc: [Static type checking] - The variable [lastname] is undeclared.
+
+
+si se repara la variable lastname por lastName, y se vuelve a compilar funciona con exito
+
+
+ /************************************************/
+ # Seccion 10 - 91:
+Immutable
+Una vez que se crea una instancia de alh¿go no se puede cambiar su estado
+https://groovy-lang.org/api.html
+>> groovy.transform  >> Immutble
+
+Se crea la clase Person.groovy con los AST de ToString y Immutable
+
+    package immutable
+    import groovy.transform.Immutable
+    import groovy.transform.ToString
+
+    @ToString
+    @Immutable
+    class Person {
+        String first
+        String last
+}
+
+
+y por otro lao el script app.groovy
+
+    package immutable
+    Person p= new Person("Liliam", "Bolanos")
+    println p.toString()
+    p.first = "Andy"
+
+Al ejecutar esto se obtiene un error que indica que no se puede cambiar el estado, si se va a ver Person.class. se ve que tiene metodo final y variables privadas. no hay Setters para esos camos en particular
+
+
+  /************************************************/
+# Seccion 10 - 90:
+Sorteable
+Para el ordenamiento de objetos o clases
+Implementa la interfaz comparable
+
+https://groovy-lang.org/api.html
+>> groovy.transform  >> Sorteable
+
+Se crea la clase Person.groovy
+
+    package sorted
+    import groovy.transform.Canonical
+    @Canonical
+    class Person {
+        String first
+        String last
+    }
+
+Y en el script app.groovy
+
+    package sorted
+    Person p1= new Person("Liliam", "Bolanos")
+    Person p2= new Person("Kelly", "Bolanos")
+    Person p3= new Person("Fernando", "Bolanos")
+    Person p4= new Person("Antonio", "Bolanos")
+
+    def bolanos =[p1,p2,p3,p4]
+    println(bolanos)
+
+al ejecutar esto imprime la lista en el orden de creacion:
+
+    [sorted.Person(Liliam, Bolanos), sorted.Person(Kelly, Bolanos), sorted.Person(Fernando, Bolanos), sorted.Person(Antonio, Bolanos)]
+
+
+pero a cambiar la linea de impresion con el toSorted()
+
+    println(bolanos.toSorted())
+
+Se va a la definicion de ToSorted donde se ve que es una ordenacion iterable, y asume que los elementos son coparables, pero en si aun no hay forma de ordenarlos pues no sabe como ordenarlos, entonces se puede uase el estandar Java para implementar  la interfaz de comparacion. para esto se añade la anotacion Sorteabe en  la clase persona
+
+    package sorted
+    import groovy.transform.Canonical
+    import groovy.transform.Sortable
+
+    @Canonical
+    @Sortable
+    class Person {
+        String first
+        String last
+    }
+
+Al ejecutar nuevamente el script imprime
+
+    [sorted.Person(Antonio, Bolanos), sorted.Person(Fernando, Bolanos), sorted.Person(Kelly, Bolanos), sorted.Person(Liliam, Bolanos)]
+
+se añade una persona
+
+    Person p5= new Person("Jason", "NotBolanos")
+
+y al volver a ejecutar se obtiene
+
+    [sorted.Person(Antonio, Vega), sorted.Person(Fernando, Vega), sorted.Person(Kelly, Vega), sorted.Person(Liliam, Vega)]
+
+
+Con el Sort se puede incluir un orden o campos en particular
+
+    package sorted
+
+    import groovy.transform.Canonical
+    import groovy.transform.Sortable
+
+    @Canonical
+    @Sortable (includes = ['last','first'])
+    class Person {
+        String first
+        String last
+    }
+
+y al ejecutar de nuevo
+
+    package sorted
+
+    Person p1= new Person("Liliam", "Bolanos")
+    Person p2= new Person("Kelly", "Bolanos")
+    Person p3= new Person("Fernando", "Bolanos")
+    Person p4= new Person("Antonio", "Bolanos")
+    Person p5= new Person("Jason", "NotBolanos")
+
+    def bolanos =[p1,p2,p3,p4,p5]
+    println bolanos.toSorted()
+
+
+se obtiene el orden de apellido luego nombre
+
+    [sorted.Person(Jason, NotaVega), sorted.Person(Antonio, Vega), sorted.Person(Fernando, Vega), sorted.Person(Kelly, Vega), sorted.Person(Liliam, Vega)]
+
+
+ /************************************************/
+# Seccion 10 - 89:
+Singleton
+Es una manera de hacer que una clase siga cierto estandar. En Java solo se puede tener una instancia de la clase en existenca (metodo estatico y contructor privado)
+En groovy se puede añadir el AST Singleton
+
+
+https://groovy-lang.org/api.html
+>> groovy.transform  >> Singleton
+
+Crea la clase DatabaseConnection.groovy y se coloca el singleton
+
+    package singleton
+    @Singleton
+    class DatabaseConnection {
+    }
+
+Luego en el script de app.groovy
+
+    package singleton
+    DatabaseConnection dbConnection = new DatabaseConnection()
+    println(dbConnection)
+
+si se ejecuta en este punto se obtiene un error, pues solo se puede acceder a la isnancia atravez del metodo estatico, y lo que se hara es ir al codigo generado de la clase DatabaseConnection.class
+
+Hay una  public static final DatabaseConnection instance, asi que se puede acceder por medio del metodo getInstance()
+
+ahora en el archivo app.groovy
+
+    package singleton
+
+    DatabaseConnection db = DatabaseConnection.instance
+    println(db)
+
+Y al ejecutarlo ya no presenta error y se obtiene
+
+    singleton.DatabaseConnection@54107f42
+
+Entonces el singleton permite seguir el patron singleton y se debe asegurar que solo exista una instancia de esa clase.
+
+
+ /************************************************/
+# Seccion 10 - 88:
+Canonical
+Esta es la mezcla de las 3 anteriores ToString, EqualsAndHashCode y TupleConstructor
+
+https://groovy-lang.org/api.html
+>> groovy.transform  >> Canonical
+
+En la clase Person.groovy
+
+    package canonical
+    import groovy.transform.Canonical
+
+    @Canonical
+    class Person {
+        String first
+        String last
+        String email
+    }
+
+Y en el sript app.Groovy se escribe:
+
+    package canonical
+
+Haciendo uso de TupleConstructor se crea una persona
+
+    Person p1= new Person("Liliam", "Bolanos", "lbolanos@mail.com")
+    Person p2= new Person("Liliam", "Bolanos", "lbolanos@mail.com")
+
+Con el assert se hace uso del EqualsAndHashCode
+
+    assert p1 == p2
+
+Y finalmente se hace uso del ToString 
+
+    print p1.toString()
+
+al ejecutar se obtiene resultado exitoso con la impresion de P1
+
+    canonical.Person(Liliam, Bolanos, lbolanos@mail.com)
+
+
+ /************************************************/
+ # Seccion 10 - 87:
+TupleConstructor
+
+https://groovy-lang.org/api.html
+>> groovy.transform  >> TupleConstructor
+
+se usa cuando no se nombran los parametros cuando se define el objeto
+
+Comienza definiendo la clase Person.groovy
+
+    package tuple
+    import groovy.transform.ToString
+    import groovy.transform.TupleConstructor
+
+    @ToString
+    @TupleConstructor
+    class Person {
+        String first
+        String last
+        String email
+    }
+
+Y en el scrips app.groovy se coloca
+
+    package tuple
+    Person p= new Person("Liliam", "Bolanos", "lbolanos@mail.com")
+    print p.toString()
+
+y al ejecutar esta parte se obtiene los datos tal como los presenta en a clase:
+
+    tuple.Person(Liliam, Bolanos, lbolanos@mail.com)
+
+
+ /************************************************/
+# Seccion 10 - 86:
+Equals and HashCode AST transformations
+
+https://groovy-lang.org/api.html
+>> groovy.transform  >> EqualsAndHashCode
+
+Reusamos la clase PersonPerson
+
+    package equals
+    import groovy.transform.ToString
+
+    class Person {
+        String first
+        String last
+        String email
+    }
+
+Y en el script app.groovy escribe
+
+    package equals
+    Person p1= new Person(first:"Liliam", last:"Bolanos", email:"lbolanos@mail.com")
+    Person p2= new Person(first:"Liliam", last:"Bolanos", email:"lbolanos@mail.com")
+    assert p1==p2
+
+que al ejecutarlo, falla, pues la applicacion no sabe que significa el igual (==), pues solo referencia a la instancia actual, y para este las instancias son diferentes
+
+lo que se debe hacer en Groovy es usar Equals y hashCode, para esto vamos a la clase person
+
+    package equals
+    import groovy.transform.EqualsAndHashCode
+    @EqualsAndHashCode
+    class Person {
+        String first
+        String last
+        String email
+    }
+
+Y al volver a ejecutar el script se obtione resultado exitoso. Esta es la forma en que el programa entiende la igualdad, pues ya sabe que son propiedades iguales
+
+Al hacer cambio en una de las instancias
+
+    package equals
+    Person p1= new Person(first:"Liliam", last:"Bolanos", email:"lbolanos@mail.com")
+    Person p2= new Person(first:"Liliam", last:"Bolanos", email:"lbolanos@work.com")
+    assert p1==p2
+
+si se ejecuta en este momento se obtendra error pues no son iguales. lo que se puese hacer en este casi es que puede seguir obteniendo la igualdad al excluir el parametro en la clase afectado
+
+    @EqualsAndHashCode(excludes = ["email"])
+
+Al ejecutar el script, el proceso termina exitosamente de nuevo.
+
+
+ /************************************************/
+# Seccion 10 - 85:
+
+Anotacion ToString
+
+https://groovy-lang.org/api.html
+>> groovy.transform  >> ToString
+
+Se crea la clase Person.groovy 
+
+    class Person {
+        String first
+        String last
+        String email
+    }
+
+se presiona en windows click derecho o en mac Cmd+N en la seccion de definicion de vbles, Luego presionar Generar.. > toString(), para generar las propiedades que se dese incluir.
+y se crea este codigo dentro de la clase el metodo ToString
+
+    package tostring
+    class Person {
+        String first
+        String last
+        String email
+
+        @Override
+        public String toString() {
+            return "Person{" +
+                    "first='" + first + '\'' +
+                    ", last='" + last + '\'' +
+                    ", email='" + email + '\'' +
+                    '}';
+        }
+    }
+
+
+Crear un script llamado app.groovy
+
+    package tostring
+    Person p= new Person(first:"Liliam", last:"Bolanos", email:"lbolanos@mail.com")
+    print p.toString()
+
+que al ejecutarlo se obtiene:
+
+    Person{first='Liliam', last='Bolanos', email='lbolanos@mail.com'}
+
+El problema con esta forma es el alto costo de mantenimiento del metodo.
+
+asi que otra forma de trabajarlo es, añadir la anotacion para el metodo toString asi que la clase queda de la siguiente forma
+
+    package tostring
+    import groovy.transform.ToString
+    @ToString
+    class Person {
+        String first
+        String last
+        String email
+    }
+
+y al ejecutar nuevamente el script app.groovy se obtiene:
+
+    tostring.Person(Liliam, Bolanos, lbolanos@mail.com)
+
+Ahora se añade al ToString includeNames
+
+    @ToString (includeNames = true)
+
+Y al ejecutar nuevamente el script se obtiene el resultado incuyendo el nombre de las vbles:
+
+    tostring.Person(first:Liliam, last:Bolanos, email:lbolanos@mail.com)
+
+Tambien se puede usar otros metodos como Excludes, ejemplo
+
+    tostring.Person(first:Liliam, last:Bolanos, email:lbolanos@mail.com)
+    que imprime:
+    tostring.Person(first:Liliam, last:Bolanos)
+
+
+Si se va a la carpeta de salida Out... y se busca la clase generada Person.class, se puede ver los AST generados para Tostring. dada la complejidad es bueno usar las anotaciones para este caso.
+
+
+ /************************************************/
+# Seccion 10 - 84:
+
+Compile Time Metaprogramming  
+ATS Transformations
 
  /************************************************/
 # Seccion 9 - 82-83:
