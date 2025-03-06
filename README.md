@@ -2,12 +2,677 @@
 >https://perficient.udemy.com/course/apache-groovy/
  
  En este archivo ire llenando las notas que considero relevantes colocando las secciones abordadas de la mas nueva a la mas antigua.
+
+ /************************************************/
+
+ /************************************************/
+
+ /************************************************/
+
+ /************************************************/
+
+ /************************************************/
+
+ /************************************************/
+
+ /************************************************/
+
+ /************************************************/
+
+ /************************************************/
+# Seccion 11 - 105:
+List of Builders
+
+Documentacion: 
+https://groovy-lang.org/dsls.html
+ >> sectioon 8  
  
- /************************************************/
+Da una descripcion de varios builders
+
 
  /************************************************/
+# Seccion 11 - 104:
+Object Graph Builder
+
+Documentacion: 
+https://groovy-lang.org/api.html
+>> groovy.util  >> ObjectGraphBuilder 
+
+Para creacion de objetos graficos
+
+crear la el script book.groovy dentro del src del proyecto object-graph. y en el archivo crear las clases para el objeto libro
+
+    import groovy.transform.ToString
+
+    @ToString(includeNames = true)
+    class Book {
+        String title
+        String summary
+        List<Section> sections = []
+    }
+
+    @ToString(includeNames = true)
+    class Section {
+        String title
+        List<Chapter> chapters = []
+    }
+
+    @ToString(includeNames = true)
+    class Chapter{
+        String title
+    }
+
+para ejemplificar se tiene el modo de Java, en la parte de abajo de la definicion de las clases, El cual se comenta mas tarde.
+
+    //Java Style (No usado en este ejemplo)
+    public Book createBook(){
+        Book b = new Book();
+        b.setTitle("My book");
+        b.setSummary("My summary");
+
+        Section s = new Section();
+        s.setTitle("My section 1");
+
+        Chapter  c1 = new Chapter();
+        c1.setTitle("My Chapter 1");
+        Chapter  c2 = new Chapter();
+        c2.setTitle("My Chapter 2");
+
+        s.addChapters(c1,c2);
+        b.getSections().add(s)
+
+        return b;
+    }
+        
+
+En su lugar se usara el Object builder class de groovy
+
+    ObjectGraphBuilder builder = new ObjectGraphBuilder()
+
+si se ejecuta en la consola de groovy se necesita tener un loader y pasarlo al constructor, pero en intellij no es necesario
+
+en el siguiente codigo. book se refiere a una ruta nodo (similar a json markup)
+
+    ObjectGraphBuilder builder = new ObjectGraphBuilder()
+
+    def book = builder.book(
+            title:"Groovy in Action 2nd Edition",
+            summary:"Groovy in Action, Second Edition is a thoroughly revised, comprehensive guide to Groovy programming.") {
+        section(title:"Section 1"){
+            chapter(title: "Chapter 1")
+            chapter(title: "Chapter 2")
+            chapter(title: "Chapter 3")
+        }
+        section(title:"Section 2"){
+            chapter(title: "Chapter 4")
+            chapter(title: "Chapter 5")
+            chapter(title: "Chapter 6")
+        }
+    }
+
+println book
+
+que al ejecutarlo se obtiene en consola
+
+    Book(title:Groovy in Action 2nd Edition, summary:Groovy in Action, Second Edition is a thoroughly revised, comprehensive guide to Groovy programming., sections:[Section(title:Section 1, chapters:[Chapter(title:Chapter 1), Chapter(title:Chapter 2), Chapter(title:Chapter 3)]), Section(title:Section 2, chapters:[Chapter(title:Chapter 4), Chapter(title:Chapter 5), Chapter(title:Chapter 6)])])
+
+ Se pueden crear algunos asserts, como por ejemplo 
+ 
+    assert book.title == "Groovy in Action 2nd Edition"
+    assert book.sections.size() == 2
+    assert book.sections[0].title == "Section 1"
+    assert book.sections[0].chapters.size() == 3
 
  /************************************************/
+# Seccion 11 - 103:
+JSON builder
+
+
+Es similar a markupbuilder, pero con algunas diferencias
+
+Crear el script json.groovy y el paquete json
+
+    import groovy.json.JsonBuilder
+    JsonBuilder builder = new JsonBuilder()
+
+    builder.books {
+        book {
+            title'The 4 Hour Work Week'
+            isbn '978-0-307-46535-1'
+            author(first'Timothy', last:'Ferriss', twitter:'@tferriss')
+            related 'The 4 Hour Body','The 4 Hour chef'
+        }
+    }
+
+    println builder.toString()
+
+que al ejecutarlo da como resultado un json de la siguiente forma
+
+    {"books":{"book":{"title":"The 4 Hour Work Week","isbn":"978-0-307-46535-1","first":[{"last":"Ferriss","twitter":"@tferriss"},"Timothy"],"author":[{"last":"Ferriss","twitter":"@tferriss"},"Timothy"],"related":["The 4 Hour Body","The 4 Hour chef"]}}}
+
+Para añadir otro libro, se debe tener en cuenta que los elementos de la estructura de datos de Jason necesitan tener llaves unicas
+
+    import groovy.json.JsonBuilder
+    JsonBuilder builder = new JsonBuilder()
+
+    builder.books {
+        currentBook {
+            title'The 4 Hour Work Week'
+            isbn '978-0-307-46535-1'
+            author(first'Timothy', last:'Ferriss', twitter:'@tferriss')
+            related 'The 4 Hour Body','The 4 Hour chef'
+        }
+
+        nextBook {
+            title'#AskGaryVee'
+            isbn '978-0-06-227312-3'
+            author(first'Gary', last:'Vaynerchuck', twitter:'@garyvee')
+            related 'Jab, Jab, Jab, Right Hook','Crush it'
+        }
+    }
+
+    println builder.toString()
+
+al ejecutar:
+
+    {"books":{"currentBook":{"title":"The 4 Hour Work Week","isbn":"978-0-307-46535-1","first":[{"last":"Ferriss","twitter":"@tferriss"},"Timothy"],"author":[{"last":"Ferriss","twitter":"@tferriss"},"Timothy"],"related":["The 4 Hour Body","The 4 Hour chef"]},"nextBook":{"title":"#AskGaryVee","isbn":"978-0-06-227312-3","first":[{"last":"Vaynerchuck","twitter":"@garyvee"},"Gary"],"author":[{"last":"Vaynerchuck","twitter":"@garyvee"},"Gary"],"related":["Jab, Jab, Jab, Right Hook","Crush it"]}}}
+
+Documentacion: 
+https://groovy-lang.org/api.html
+>> groovy.json  >> JsonBuilder 
+
+metodo toPrettyString() para tener una vista diferente del jason
+
+    println builder.toPrettyString()
+
+imprimira:
+
+    {
+        "books": {
+            "currentBook": {
+                "title": "The 4 Hour Work Week",
+                "isbn": "978-0-307-46535-1",
+                "first": [
+                    {
+                        "last": "Ferriss",
+                        "twitter": "@tferriss"
+                    },
+                    "Timothy"
+                ],
+                "author": [
+                    {
+                        "last": "Ferriss",
+                        "twitter": "@tferriss"
+                    },
+                    "Timothy"
+                ],
+                "related": [
+                    "The 4 Hour Body",
+                    "The 4 Hour chef"
+                ]
+            },
+            "nextBook": {
+                "title": "#AskGaryVee",
+                "isbn": "978-0-06-227312-3",
+                "first": [
+                    {
+                        "last": "Vaynerchuck",
+                        "twitter": "@garyvee"
+                    },
+                    "Gary"
+                ],
+                "author": [
+                    {
+                        "last": "Vaynerchuck",
+                        "twitter": "@garyvee"
+                    },
+                    "Gary"
+                ],
+                "related": [
+                    "Jab, Jab, Jab, Right Hook",
+                    "Crush it"
+                ]
+            }
+        }
+    }
+
+
+para imprimir el json generado en un archivo aparte se añade la linea
+
+    new File('json/books.json').write(builder.toPrettyString())
+
+ /************************************************/
+# Seccion 11 - 101-102:
+Ejercicio
+
+XML
+Use the MarkupBuilder to generate the following XML
+
+    <books>
+        <book isbn="978-1935182443">
+            <title>Groovy in Action 2nd Edition</title>
+            <author>Dierk Koenig</author>
+            <price>50.58</price>
+        </book>
+        <book isbn="978-1935182948">
+            <title>Making Java Groovy</title>
+            <author>Ken Kousen</author>
+            <price>33.96</price>
+        </book>
+        <book isbn="978-1937785307">
+            <title>Programming Groovy 2: Dynamic Productivity for the Java Developer</title>
+            <author>Venkat Subramaniam</author>
+            <price>28.92</price>
+        </book>
+    </books>
+
+
+HTML
+With the same data from the xml version build an HTML page that lists that data.
+
+Bonus
+Using a FileWriter write the contents of the HTML from the MarkupBuilder to a file.
+
+
+Para XML se crea el archivo xml.groovy con el codigo
+
+    import groovy.xml.MarkupBuilder
+    FileWriter writer = new FileWriter("xml/books.xml")
+    MarkupBuilder builder = new MarkupBuilder(writer)
+
+    builder.books {
+        book(isbn:"978-1935182443") {
+            title("Groovy in Action 2nd Edition")
+            author("Dierk Koenig")
+            price("50.58")
+        }
+        book (isbn:"978-1935182948"){
+            title("Making Java Groovy")
+            author("Ken Kousen")
+            price("33.96")
+        }
+        book (isbn:"978-1937785307"){
+            title("Programming Groovy 2: Dynamic Productivity for the Java Developer")
+            author("Venkat Subramaniam")
+            price("28.92")
+        }
+    }
+ 
+Que al ejecutarlo crea el archivo books.xml en la carpeta ya creada xml
+ 
+    <books>
+    <book isbn='978-1935182443'>
+        <title>Groovy in Action 2nd Edition</title>
+        <author>Dierk Koenig</author>
+        <price>50.58</price>
+    </book>
+    <book isbn='978-1935182948'>
+        <title>Making Java Groovy</title>
+        <author>Ken Kousen</author>
+        <price>33.96</price>
+    </book>
+    <book isbn='978-1937785307'>
+        <title>Programming Groovy 2: Dynamic Productivity for the Java Developer</title>
+        <author>Venkat Subramaniam</author>
+        <price>28.92</price>
+    </book>
+    </books>
+
+
+
+Para HTML se crea el archivo html.groovy con el codigo
+
+    import groovy.xml.MarkupBuilder
+
+    def books =[
+            [isbn:"978-1935182443", title:"Groovy in Action 2nd Edition", author:"Dierk Koenig", price:"50.58"],
+            [isbn:"978-1935182948", title:"Making Java Groovy", author:"Ken Kousen",price:"33.96"],
+            [isbn:"978-1935182443", title:"Groovy in Action 2nd Edition", author:"Dierk Koenig", price:"50.58"]
+    ]
+
+    FileWriter fileWriter = new FileWriter("html/books.html")
+    MarkupBuilder builder = new MarkupBuilder(fileWriter)
+
+    builder.books {
+        head {
+            title"Books"
+        }
+        body{
+            h1("books")
+            table{
+                tr{
+                    th 'ISBN'
+                    th 'Title'
+                    th 'Author'
+                    th 'Price'
+                }
+                books.each { book ->
+                    tr {
+                        td book.isbn
+                        td book.title
+                        td book.author
+                        td book.price
+                    }
+                }
+            }
+        }
+    }
+
+
+Que al ejecutarlo crea el archivo books.html en la carpeta ya creada html
+
+    <books>
+    <head>
+        <title>Books</title>
+    </head>
+    <body>
+        <h1>books</h1>
+        <table>
+        <tr>
+            <th>ISBN</th>
+            <th>Title</th>
+            <th>Author</th>
+            <th>Price</th>
+        </tr>
+        <tr>
+            <td>978-1935182443</td>
+            <td>Groovy in Action 2nd Edition</td>
+            <td>Dierk Koenig</td>
+            <td>50.58</td>
+        </tr>
+        <tr>
+            <td>978-1935182948</td>
+            <td>Making Java Groovy</td>
+            <td>Ken Kousen</td>
+            <td>33.96</td>
+        </tr>
+        <tr>
+            <td>978-1935182443</td>
+            <td>Groovy in Action 2nd Edition</td>
+            <td>Dierk Koenig</td>
+            <td>50.58</td>
+        </tr>
+        </table>
+    </body>
+    </books>
+
+
+ /************************************************/
+# Seccion 11 - 99:
+Documentacion Builder
+
+https://groovy-lang.org/api.html  
+
+Dado que la documetacion es lago ligera se recomienda ir al codigo fuentey revisar los test unitarios https://github.com/apache/groovy  
+https://github.com/apache/groovy/blob/master/subprojects/groovy-xml/src/test/groovy/groovy/xml/MarkupBuilderTest.groovy    
+Copiar los ejemplos y ehjecutarlos es una buena forma de aprender sobre los builders  
+
+https://github.com/apache/groovy/blob/master/subprojects/groovy-xml/src/test/groovy/groovy/xml/MarkupBuilderTest.groovy  
+
+# Seccion 11 - 100:
+MarkupBuilder - HTML
+
+https://groovy-lang.org/api.html
+>> groovy.xml  >> MarkupBuilder
+
+Crear el script html.groovy, tratando de seguir la estructura de un html
+
+    import groovy.xml.MarkupBuilder
+    MarkupBuilder builder = new MarkupBuilder()
+
+    builder.html {
+        head {
+            title 'About Liliam Bolanos'
+            description 'This is an about me page'
+            keywords 'Liliam Bolanos, Groovy, Java, Spring'
+        }
+        body {
+            h1 'About me'
+            p 'This is a bunch of text about me...'
+            section {
+                h2 'Courses'
+                table{
+                    tr{
+                        th 'id'
+                        th 'name'
+                    }
+                    tr{
+                        th '1'
+                        th 'Groovy'
+                    }
+                    tr{
+                        th '2'
+                        th 'Spring Boot'
+                    }
+                }
+            }
+        }
+    }
+
+Que al ejecutarlo obtiene una estructura de html de la siguiente forma
+
+    <html>
+    <head>
+        <title>About Liliam Bolanos</title>
+        <description>This is an about me page</description>
+        <keywords>Liliam Bolanos, Groovy, Java, Spring</keywords>
+    </head>
+    <body>
+        <h1>About me</h1>
+        <p>This is a bunch of text about me...</p>
+        <section>
+        <h2>Courses</h2>
+        <table>
+            <tr>
+            <th>id</th>
+            <th>name</th>
+            </tr>
+            <tr>
+            <th>1</th>
+            <th>Groovy</th>
+            </tr>
+            <tr>
+            <th>2</th>
+            <th>Spring Boot</th>
+            </tr>
+        </table>
+        </section>
+    </body>
+    </html>
+    Process finished with exit code 0
+
+
+basicamernte lo que se hace es usar codigo para generar markups, y asi mismo se pueden usar para construir markups dentro del mismo. Por ejemplo se puede usar una lista para generar la tabla:
+
+    import groovy.xml.MarkupBuilder
+
+    MarkupBuilder builder = new MarkupBuilder()
+
+    List courses = [
+            [id:1, name: 'Apache Groovy'],
+            [id:2, name: 'Spring Boot']
+    ]
+
+    builder.html {
+        head {
+            title 'About Liliam Bolanos'
+            description 'This is an about me page'
+            keywords 'Liliam Bolanos, Groovy, Java, Spring'
+        }
+        body {
+            h1 'About me'
+            p 'This is a bunch of text about me...'
+            section {
+                h2 'Courses'
+                table{
+                    tr{
+                        th 'id'
+                        th 'name'
+                    }
+                    courses.each { course ->
+                        tr {
+                            td course.id
+                            td course.name
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+que al ejecutarlo obtiene un resultado similar
+
+    <html>
+    <head>
+        <title>About Liliam Bolanos</title>
+        <description>This is an about me page</description>
+        <keywords>Liliam Bolanos, Groovy, Java, Spring</keywords>
+    </head>
+    <body>
+        <h1>About me</h1>
+        <p>This is a bunch of text about me...</p>
+        <section>
+        <h2>Courses</h2>
+        <table>
+            <tr>
+            <th>id</th>
+            <th>name</th>
+            </tr>
+            <tr>
+            <td>1</td>
+            <td>Apache Groovy</td>
+            </tr>
+            <tr>
+            <td>2</td>
+            <td>Spring Boot</td>
+            </tr>
+        </table>
+        </section>
+    </body>
+    </html>
+    Process finished with exit code 0
+
+Tambien se puede escribir esto en un archivo añadiendo una anotacion de archivo al inicio, y pasar el writer en el builder
+
+    FileWriter writer = new FileWriter('html/about.html')
+    MarkupBuilder builder = new MarkupBuilder(writer)
+
+Lo que crea el archivo about.html en la careta html al ejecutar el codigo, con el codigo en HTML
+
+    <html>
+    <head>
+        <title>About Liliam Bolanos</title>
+        <description>This is an about me page</description>
+        <keywords>Liliam Bolanos, Groovy, Java, Spring</keywords>
+    </head>
+    <body>
+        <h1>About me</h1>
+        <p>This is a bunch of text about me...</p>
+        <section>
+        <h2>Courses</h2>
+        <table>
+            <tr>
+            <th>id</th>
+            <th>name</th>
+            </tr>
+            <tr>
+            <td>1</td>
+            <td>Apache Groovy</td>
+            </tr>
+            <tr>
+            <td>2</td>
+            <td>Spring Boot</td>
+            </tr>
+        </table>
+        </section>
+    </body>
+    </html>
+
+
+ /************************************************/
+# Seccion 11 - 98:
+MarkupBuilder - XML
+
+https://groovy-lang.org/api.html
+>> groovy.xml  >> MarkupBuilder
+
+Se crea un script xml.groovy, se tiene un builder llamando a un metodo llamado sports. Se puede pasar un closure a un metodo y se puede omitir los parentesis, solo usando las llaves. Y como para builder no se encontrara un metodo llamado sports, este es un metodo Invoke o missing method. Dentro se contrut¿yen nodos individuales con atributos mapeados.
+
+
+    import groovy.xml.MarkupBuilder
+    MarkupBuilder builder = new MarkupBuilder()
+
+    builder.sports {
+        sport(id:1) {
+            name 'Baseball'
+        }
+        sport(id:2) {
+            name 'Baskeball'
+        }
+        sport(id:3) {
+            name 'Football'
+        }
+        sport(id:4) {
+            name 'Hockey'
+        }
+        sport(id:null) {
+            name ''
+        }
+        
+    }
+
+Y al ejecutar se obtiene en formato XML
+
+    <sports>
+    <sport id='1'>
+        <name>Baseball</name>
+    </sport>
+    <sport id='2'>
+        <name>Baskeball</name>
+    </sport>
+    <sport id='3'>
+        <name>Football</name>
+    </sport>
+    <sport id='4'>
+        <name>Hockey</name>
+    </sport>
+    </sports>
+    Process finished with exit code 0
+
+
+al añador un nodo mas 
+
+	sport(id:null) {
+        name ''
+    }
+
+y ejecutar nuevamente se ve para esa seccion se ve un atributo vacio
+
+    <sport id=''>
+        <name></name>
+    </sport>
+  
+otro ejemplo es añadir las anotaciones 
+
+    builder.omitEmptyAttributes = true
+    builder.omitNullAttributes = true
+
+y añadir un nodo:
+
+	sport(id:null, foo:'') {
+        name ''
+    }
+
+se obtiene como resultado sports como el nodo sin los vacios o nulos
+
+    <sport>
+        <name></name>
+    </sport>
+
+ /************************************************/
+# Seccion 11 - 97:
+Introduccion a Builders  
+Es una manera conveniente de build out objetos
 
  /************************************************/
  # Seccion 10 - 95-96:
