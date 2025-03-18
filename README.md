@@ -20,6 +20,404 @@
  /************************************************/
 
  /************************************************/
+
+ /************************************************/
+
+ /************************************************/
+
+ /************************************************/
+# Seccion 12 - 111:
+Content Negociation
+
+La negociación de contenidos es un mecanismo definido en la especificación Http que permite servir diferentes versiones de un documento (o más en general, una representación de recursos) en la misma Uri, de modo que los agentes de usuario puedan especificar qué versión se ajusta mejor a sus capacidades. Wikipedia
+
+    CLIENT  ---------envia Jason -------> SERVER
+    espera respuesta en JSON              Indica que puede dar la rspta
+
+
+# Seccion 12 - 112:
+Usig REST based APIs
+
+en un nuevo proyecto llamado rest Crear el archivo simpleGET.groovy con la linea 
+
+println('http://groovy-lang.org'.toURL().text)
+
+al ejecutarla se muestra un extenso xml corresponiente a la pagina de groovy.
+
+tomar como ejemplo la pagina http://www.icndb.com/api/  (ya no funciona, yo use https://api.chucknorris.io/)
+
+Lo primero es que no se necesita tener un cliente rest nativo contruido, sin embargo hay uno llamado http Builder https://github.com/jgritman/httpbuilder/ en la wiki hay muchos ejemplos de como usarlo
+
+para el ejemplo crear el archivo chuck.groovy y se usara Grab, que permite bajar la dependencia del constructor http ya que no tenemos Graddle
+ 
+    import jdk.jfr.ContentType
+
+    @Grab('org.codehaus.groovy.modules.http-builder:0.7.1')
+
+    String base = 'https://api.chucknorris.io/'
+
+    def chuck = new RESTClient(base)
+    chuck.contentType = ContentType.JSON
+
+    chuck.get(path:'/jokes/random'){ response, json ->
+        println response.status
+        println json
+
+    }
+
+No pude ejecutar debido a que pide la dependencia Ivy de Apache por el RESTClient. se debe añadir Instalando las librerías de apache.ivy y codehaus.groovy.modules.http.builder, en "Project Structure..."
+y actualizar el archivo con 
+ 
+    import groovyx.net.http.ContentType
+    import groovyx.net.http.RESTClient
+
+    @Grab('org.codehaus.groovy.modules.http-builder:http-builder:0.7.1')
+    @Grab(group='org.apache.ivy', module='ivy', version='2.5.2')
+
+ya al ejecutar el codigo se obtiene
+
+    200
+    [categories:[], created_at:2020-01-05 13:42:19.104863, icon_url:https://api.chucknorris.io/img/avatar/chuck-norris.png, id:19QZ1cdySJKrqi-EN-elVA, updated_at:2020-01-05 13:42:19.104863, url:https://api.chucknorris.io/jokes/19QZ1cdySJKrqi-EN-elVA, value:The munchies get Chuck Norris.]
+
+
+Personalizar la broma, con usuo de mapas y pasando los parametros para la broma:
+
+    import groovyx.net.http.ContentType
+    import groovyx.net.http.RESTClient
+
+    @Grab('org.codehaus.groovy.modules.http-builder:http-builder:0.7.1')
+    @Grab(group='org.apache.ivy', module='ivy', version='2.5.2')
+
+    String base = 'https://api.chucknorris.io/'
+
+    def chuck = new RESTClient(base)
+    def params = [fistName : "Liliam", lastName: "Bolanos"]
+
+
+    chuck.contentType = ContentType.JSON
+
+    chuck.get(path:'/jokes/random', query: params){ response, jason ->
+        println response.status
+        println json
+    }
+
+
+ /************************************************/
+# Seccion 12 - 110:
+HTTP Status codes
+Los codigos de estatus de HTTPS nos ayudan a comprender el estado de la solicitud. se dividen en 5 grupos
+
+    Informational responses (100 – 199)
+    Successful responses (200 – 299)
+    Redirection messages (300 – 399)
+    Client error responses (400 – 499)
+    Server error responses (500 – 599)
+
+https://developer.mozilla.org/en-US/docs/Web/HTTP/Status
+
+los mas comunes:
+
+    200 OK  la respuesta ha sido exitosa
+    201 Created   respuesta exitosa y el nuevo recurso ha sido creados
+    204 No content   no hay contenido para esta respuesta
+
+    301 Moved permanently  la url ha camiado
+    304 not Modified   el cliente continua con la misma version de cache
+    307 Temporary Redirect   
+
+    400 Bad request  la rspta no puede ser entendida, debido a la mala config de data
+    401 Unauthorized falla de autenticacion
+    403 Forbidden  legal request pero el servidor se niega a contestar
+    404 Not found
+
+500 Internal server error
+502 bad gateway
+
+
+ /************************************************/
+# Seccion 12 - 109:
+HTTP verbs
+
+A manera de tener ventaja con consumir o usar las APIs, es importante conocer sobre los HTTP verbs (GET / POST)
+
+        GET     /post     Gets all of the psots in the repository
+        GET     /post/1   Gets the post that has an id of 1
+        POST    /post     Creates a new post
+        PUT     /post/1   Updates an existing post
+        DELETE  /post/1   Deletes an existing post
+
+Para recapitular, en un escenario tenemos un navegador que hace una peticiona un servidor usando Get o Post, y que va a devolver un formato de respueta de HTML u otros recursos
+
+    BROWSER ---------Request method Get/Post -------> SERVER
+            <---- ResponseFormat HTML /others -------
+		
+en otro escenario se puede tener un cliente
+
+    CLIENT  ---------RM Get/Post/Put/Delete  -------> SERVER
+            <---- ResponseFormat JSON / XML  -------
+
+ /************************************************/
+# Seccion 12 - 108:
+Working with JSON
+De manera similar a xml para Json tambienexiste un JsonSlurper
+ 
+Retomando lo que se vio en builders se crea el script books.groovy con el codigo
+
+	import groovy.json.JsonBuilder
+
+	JsonBuilder builder = new JsonBuilder()
+
+	builder.books {
+		currentBook {
+			title'The 4 Hour Work Week'
+			isbn '978-0-307-46535-1'
+			author(first'Timothy', last:'Ferriss', twitter:'@tferriss')
+			related 'The 4 Hour Body','The 4 Hour chef'
+		}
+
+		nextBook {
+			title'#AskGaryVee'
+			isbn '978-0-06-227312-3'
+			author(first'Gary', last:'Vaynerchuck', twitter:'@garyvee')
+			related 'Jab, Jab, Jab, Right Hook','Crush it'
+		}
+	}
+
+    new File('data/books.json').write(builder.toPrettyString())
+
+Que al ejecutar crea el archivo books.jason en la carpeta data, con el resultado:
+
+	{
+		"books": {
+			"currentBook": {
+				"title": "The 4 Hour Work Week",
+				"isbn": "978-0-307-46535-1",
+				"first": [
+					{
+						"last": "Ferriss",
+						"twitter": "@tferriss"
+					},
+					"Timothy"
+				],
+				"author": [
+					{
+						"last": "Ferriss",
+						"twitter": "@tferriss"
+					},
+					"Timothy"
+				],
+				"related": [
+					"The 4 Hour Body",
+					"The 4 Hour chef"
+				]
+			},
+			"nextBook": {
+				"title": "#AskGaryVee",
+				"isbn": "978-0-06-227312-3",
+				"first": [
+					{
+						"last": "Vaynerchuck",
+						"twitter": "@garyvee"
+					},
+					"Gary"
+				],
+				"author": [
+					{
+						"last": "Vaynerchuck",
+						"twitter": "@garyvee"
+					},
+					"Gary"
+				],
+				"related": [
+					"Jab, Jab, Jab, Right Hook",
+					"Crush it"
+				]
+			}
+		}
+	}
+
+
+ahora lo que se debe mirr es como leerlo. crear un archivo parseJson.groovy y nos copiamos el resultdo del json generado
+
+	import groovy.json.JsonSlurper
+
+	def books = '''
+	{
+		"books": {
+			"currentBook": {
+				"title": "The 4 Hour Work Week",
+				"isbn": "978-0-307-46535-1",
+				"first": [
+					{
+						"last": "Ferriss",
+						"twitter": "@tferriss"
+					},
+					"Timothy"
+				],
+				"author": [
+					{
+						"last": "Ferriss",
+						"twitter": "@tferriss"
+					},
+					"Timothy"
+				],
+				"related": [
+					"The 4 Hour Body",
+					"The 4 Hour chef"
+				]
+			},
+			"nextBook": {
+				"title": "#AskGaryVee",
+				"isbn": "978-0-06-227312-3",
+				"first": [
+					{
+						"last": "Vaynerchuck",
+						"twitter": "@garyvee"
+					},
+					"Gary"
+				],
+				"author": [
+					{
+						"last": "Vaynerchuck",
+						"twitter": "@garyvee"
+					},
+					"Gary"
+				],
+				"related": [
+					"Jab, Jab, Jab, Right Hook",
+					"Crush it"
+				]
+			}
+		}
+	}
+	'''
+
+	JsonSlurper sluper = new JsonSlurper()
+	def json = sluper.parseText(books)
+
+	println( json )
+	println( json.getClass().getName() )
+
+y al imprimir se obtiene
+
+	[books:[currentBook:[title:The 4 Hour Work Week, isbn:978-0-307-46535-1, first:[[last:Ferriss, twitter:@tferriss], Timothy], author:[[last:Ferriss, twitter:@tferriss], Timothy], related:[The 4 Hour Body, The 4 Hour chef]], nextBook:[title:#AskGaryVee, isbn:978-0-06-227312-3, first:[[last:Vaynerchuck, twitter:@garyvee], Gary], author:[[last:Vaynerchuck, twitter:@garyvee], Gary], related:[Jab, Jab, Jab, Right Hook, Crush it]]]]
+	org.apache.groovy.json.internal.LazyMap
+
+aca se mira que es una estructura de mapa, asi que se puede decir que se puede obtener los libros. por ejemplo con la siguiente linea
+
+    println( json.books.nextBook.title )
+
+se obtiene
+
+	#AskGaryVee
+
+
+Otro ejemplo puede ser obtener la informacion desde un archivo json
+
+	JsonSlurper slurper = new JsonSlurper()
+	def json = slurper.parse(new File('data/books.json'))
+
+	println(json.books.currentBook)
+	println(json.books.currentBook.title)
+	println(json.books.currentBook.author)
+	println(json.books.currentBook.related)
+
+que al ejecutar imprime:
+
+	[title:The 4 Hour Work Week, isbn:978-0-307-46535-1, first:[[last:Ferriss, twitter:@tferriss], Timothy], author:[[last:Ferriss, twitter:@tferriss], Timothy], related:[The 4 Hour Body, The 4 Hour chef]]
+	The 4 Hour Work Week
+	[[last:Ferriss, twitter:@tferriss], Timothy]
+	[The 4 Hour Body, The 4 Hour chef]
+
+
+ /************************************************/
+# Seccion 12 - 107:
+Working with XML
+
+Al comenzar a trabajar con web services, una de las cosas que se debe aprender es a escribir y leer datos
+
+Para recordar un poco de builders. Se crea el archivo xml.groovy con el siguiente codigo
+
+	import groovy.xml.MarkupBuilder
+
+	FileWriter writer = new FileWriter("data/sports.xml")
+	MarkupBuilder builder = new MarkupBuilder(writer)
+	builder.doubleQuotes = true
+
+	builder.sports {
+		sport(id:1){
+			name 'Baseball'
+		}
+		sport(id:2){
+			name 'Basketball'
+		}
+		sport(id:3){
+			name 'Football'
+		}
+		sport(id:4){
+			name 'Hockey'
+		}
+	}
+
+Que al ejecutarlo da como resultado el archivo sports.xml en la carpeta data previamente creada
+
+	<sports>
+	  <sport id="1">
+		<name>Baseball</name>
+	  </sport>
+	  <sport id="2">
+		<name>Basketball</name>
+	  </sport>
+	  <sport id="3">
+		<name>Football</name>
+	  </sport>
+	  <sport id="4">
+		<name>Hockey</name>
+	  </sport>
+	</sports>
+
+Supongamos que se quiere consultar uno de los id ya creados del xml. en groovy se simplifica a diferencia de otros lenguajes. Ahora crear el aechivo parsexml.groovy para hacer uno de los ejemplos donde usaremos XmlSlurper
+
+	import groovy.xml.XmlSlurper
+	def xml ='''
+		<sports>
+			<sport>
+				<name>Football</name>
+			</sport>
+		</sports>
+	'''
+
+	def sports = new XmlSlurper().parseText(xml)
+	println( sports.getClass().getName() )
+	println( sports.sport.name )
+
+que al ejecutar da resultado exitoso con 
+
+	groovy.xml.slurpersupport.NodeChild
+	Football
+
+
+Ejemplo 2
+
+    def sports = new XmlSlurper().parse('data/sports.xml')
+    println( sports )
+
+al imprimir
+
+    BaseballBasketballFootballHockey
+
+si se quiere obtener un id especifico se puede añadir la linea
+
+    println( sports.sport[2].name )
+
+que imprime: Football
+
+
+ /************************************************/
+# Seccion 12 - 106:
+Working with Rest Services
+
+ /************************************************/
 # Seccion 11 - 105:
 List of Builders
 
